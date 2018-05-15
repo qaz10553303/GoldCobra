@@ -19,6 +19,9 @@ var mapArray = [
     [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1]
 ];
 
+
+//This is a final copy!
+
 for (i = 0; i < rows; i++)
 {
     
