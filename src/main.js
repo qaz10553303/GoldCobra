@@ -25,20 +25,74 @@ var mapArray = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+    [0,6,5,2,0,1,0,1,0,1,0,1,0,1,0,1],
     [1,1,1,1,0,1,1,1,0,1,0,1,1,1,1,1],
     [1,1,1,1,0,1,1,1,0,1,0,0,0,0,0,1],
     [1,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1],
     [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1]
 ];
-const WALL = 1;
+const CORRIDOR = 0;
+const CEILING = 1;
+const FLOOR = 2;
+const DESTROY_WALL = 3;
+const PLATFORM = 4;
+const ITEM = 5;
+const NOTIFICATION = 6;
+const ENEMY = 7;
+const ENTRANCE = 8;
+const EXIT = 9;
+
 var SIZE = 50;
 var EMPTY = 0;
 var BLOCK = 1;
 var ROWS = mapArray.length;
 var COLUMNS = mapArray[0].length;
 var tilesheetColumns = 1;
+
+for (var row = 0; row < ROWS; row ++)
+{
+for (var col = 0; col < COLUMNS; col++)
+{
+switch(mapArray[row][column])
+{
+case CEILING:
+//insert image/block
+break;
+case FLOOR:
+//insert image/block
+break;
+case DESTROY_WALL:
+//insert image/block
+break;
+case PLATFORM:
+//insert image/block
+break;
+case ITEM:
+//insert image/block
+break;
+case CEILING:
+//insert image/block
+break;
+case NOTIFICATION:
+//insert image/block
+break;
+case ENEMY:
+//insert image/block
+break;
+case ENTRANCE:
+//insert image/block
+break;
+case EXIT:
+//insert image/block
+break;
+default:
+//walkable space
+break;
+}
+}
+}
+
 */
 
 //Keydown event listener to see if player presses key
@@ -89,6 +143,12 @@ function onKeyUp(event) {
     }
 }
 
+//function to draw ceiling, floor, wall, and platform objects for the 2d map array
+function drawMapComponents(colourStyle)
+{
+    drawingSurface.fillstyle = colourStyle;
+    drawingSurface.fillRect()
+}
 
 //drawing rectangle shape as placeholder for game sprite
 function drawRect()
