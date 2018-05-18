@@ -63,7 +63,7 @@ var assetsLoaded = 0;
 //loading the map sprite sheet image
 var image = new Image();
 image.addEventListener("load", loadHandler, false);
-image.src = "/img/mapSpriteSheet.png";
+image.src = "img/mapSpriteSheet.png";
 assetsToLoad.push(image);
 
 //game variables
@@ -231,7 +231,7 @@ function buildMap(levelMap) {
                     case CEILING: //number 1
                         var ceiling = Object.create(spriteObject);
                         ceiling.sourceX = mapSpriteSheetX;
-                        ceiling.sourceY = tileSheetY;
+                        ceiling.sourceY = mapSpriteSheetY;
                         ceiling.x = column * SIZE;
                         ceiling.y = row * SIZE;
                         sprites.push(ceiling);
@@ -244,7 +244,6 @@ function buildMap(levelMap) {
                         floor.x = column * SIZE;
                         floor.y = row * SIZE;
                         sprites.push(floor);
-                        boxes.push(floor);
                         break;
 
                     case DESTROY_WALL: //number 3
