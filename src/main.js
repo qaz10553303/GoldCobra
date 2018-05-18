@@ -63,7 +63,7 @@ var assetsLoaded = 0;
 //loading the map sprite sheet image
 var image = new Image();
 image.addEventListener("load", loadHandler, false);
-image.src = "../img/mapSpriteSheet.png";
+image.src = "/img/mapSpriteSheet.png";
 assetsToLoad.push(image);
 
 //game variables
@@ -75,8 +75,8 @@ var spriteObject =
         sourceY: 0,
         sourceWidth: 50,
         sourceHeight: 50,
-        width: 64,
-        height: 64,
+        width: 50,
+        height: 50,
         x: 0,
         y: 0,
         visible: true
@@ -89,7 +89,7 @@ var PLAYING = 2;
 var OVER = 3;
 var gameState = LOADING;
 
-//Keydown event listener to see if player presses key
+//Key down event listener to see if player presses key
 window.addEventListener("keydown", onKeyDown, false);
 
 function onKeyDown(event) {
@@ -178,7 +178,7 @@ update();
 function update()
 {
     //animation loop
-    requestAnimationFrame(update, canvas);
+    requestAnimationFrame(update);
 
     //switching the game state
     //Change what the game is doing based on the game state
@@ -189,7 +189,7 @@ function update()
             break;
 
         case BUILD_MAP:
-            buildMap(map);
+            buildMap(mapArray);
             //createOtherObjects();
             gameState = PLAYING;
             break;
