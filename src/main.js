@@ -34,15 +34,15 @@ var mapArray = [
 ];
 
 //map code
-const EMPTY = 0;
-const CEILING = 1;
-const FLOOR = 2;
-const DESTROY_WALL = 3;
-const PLATFORM = 5;
-const ITEM = 4;
-const NOTIFICATION = 6;
-const ENTRANCE = 7;
-const EXIT = 8;
+var EMPTY = 0;
+var CEILING = 1;
+var FLOOR = 2;
+var DESTROY_WALL = 3;
+var ITEM = 4;
+var PLATFORM = 5;
+var NOTIFICATION = 6;
+var ENTRANCE = 7;
+var EXIT = 8;
 
 //size of each cell
 var SIZE = 50;
@@ -56,7 +56,6 @@ var mapSpriteSheetColumns = 8;
 
 //arrays to store game objects
 var sprites = [];
-var messages = [];
 
 var assetsToLoad = [];
 var assetsLoaded = 0;
@@ -64,10 +63,24 @@ var assetsLoaded = 0;
 //loading the map sprite sheet image
 var image = new Image();
 image.addEventListener("load", loadHandler, false);
-image.src = "../images/mapSpriteSheet.png";
+image.src = "../img/mapSpriteSheet.png";
 assetsToLoad.push(image);
 
 //game variables
+
+//sprite object
+var spriteObject =
+    {
+        sourceX: 0,
+        sourceY: 0,
+        sourceWidth: 50,
+        sourceHeight: 50,
+        width: 64,
+        height: 64,
+        x: 0,
+        y: 0,
+        visible: true
+    };
 
 //Game States
 var LOADING = 0;
@@ -177,8 +190,6 @@ function update()
 
         case BUILD_MAP:
             buildMap(map);
-            buildMap(gameObjects);
-
             //createOtherObjects();
             gameState = PLAYING;
             break;
@@ -214,12 +225,12 @@ function buildMap(levelMap) {
             var currentTile = levelMap[row][column];
             if (currentTile !== EMPTY) {
                 //Find the tile's X and Y positions on the tilesheet
-                var tileSheetX = Math.floor((currentTile—1) % tilesheetColumns) *SIZE;
-                var tileSheetY = Math.floor((currentTile—1) /tilesheetColumns) *SIZE;
+                var mapSpriteSheetX = Math.floor((currentTile -1) % mapSpriteSheetColumns) *SIZE;
+                var mapSpriteSheetY = Math.floor((currentTile - 1) /mapSpriteSheetColumns) *SIZE;
                 switch (currentTile) {
                     case CEILING: //number 1
                         var ceiling = Object.create(spriteObject);
-                        ceiling.sourceX = tileSheetX;
+                        ceiling.sourceX = mapSpriteSheetX;
                         ceiling.sourceY = tileSheetY;
                         ceiling.x = column * SIZE;
                         ceiling.y = row * SIZE;
@@ -228,8 +239,8 @@ function buildMap(levelMap) {
 
                     case FLOOR: //number 2
                         var floor = Object.create(spriteObject);
-                        floor.sourceX = tileSheetX;
-                        floor.sourceY = tileSheetY;
+                        floor.sourceX = mapSpriteSheetX;
+                        floor.sourceY = mapSpriteSheetY;
                         floor.x = column * SIZE;
                         floor.y = row * SIZE;
                         sprites.push(floor);
@@ -238,8 +249,8 @@ function buildMap(levelMap) {
 
                     case DESTROY_WALL: //number 3
                         var wall = Object.create(spriteObject);
-                        wall.sourceX = tileSheetX;
-                        wall.sourceY = tileSheetY;
+                        wall.sourceX = mapSpriteSheetX;
+                        wall.sourceY = mapSpriteSheetY;
                         wall.x = column * SIZE;
                         wall.y = row * SIZE;
                         sprites.push(wall);
@@ -247,20 +258,43 @@ function buildMap(levelMap) {
 
                     case ITEM: //number 4
                         var item = Object.create(spriteObject);
-                        item.sourceX = tileSheetX;
-                        item.sourceY = tileSheetY;
+                        item.sourceX = mapSpriteSheetX;
+                        item.sourceY = mapSpriteSheetY;
                         item.x = column * SIZE;
                         item.y = row * SIZE;
                         sprites.push(item);
                         break;
-
-                    case WALL:
-                        var wall = Object.create(spriteObject);
-                        wall.sourceX = tileSheetX;
-                        wall.sourceY = tileSheetY;
-                        wall.x = column * SIZE;
-                        wall.y = row * SIZE;
-                        sprites.push(wall);
+                    case PLATFORM: //map code number 5
+                        var platform = Object.create(spriteObject);
+                        platform.sourceX = mapSpriteSheetX;
+                        platform.sourceY = mapSpriteSheetY;
+                        platform.x = column * SIZE;
+                        platform.y = row * SIZE;
+                        sprites.push(platform);
+                        break;
+                    case NOTIFICATION: //map code number 6
+                        var notification = Object.create(spriteObject);
+                        notification.sourceX = mapSpriteSheetX;
+                        notification.sourceY = mapSpriteSheetY;
+                        notification.x = column * SIZE;
+                        notification.y = row * SIZE;
+                        sprites.push(notification);
+                        break;
+                    case ENTRANCE: //map code number 7
+                        var entrance = Object.create(spriteObject);
+                        entrance.sourceX = mapSpriteSheetX;
+                        entrance.sourceY = mapSpriteSheetY;
+                        entrance.x = column * SIZE;
+                        entrance.y = row * SIZE;
+                        sprites.push(entrance);
+                        break;
+                    case EXIT: //map code number 8
+                        var exit = Object.create(spriteObject);
+                        exit.sourceX = mapSpriteSheetX;
+                        exit.sourceY = mapSpriteSheetY;
+                        exit.x = column * SIZE;
+                        exit.y = row * SIZE;
+                        sprites.push(exit);
                         break;
                 }
             }
@@ -289,4 +323,9 @@ function render() {
         }
     }
     renderRect();
+}
+
+function endGame()
+{
+    console.log("game over");
 }
