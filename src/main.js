@@ -67,6 +67,17 @@ image.src = "img/mapSpriteSheet.png";
 assetsToLoad.push(image);
 
 //game variables
+var playerXVelocity;
+var playerX = 30;
+var playerYVelocity;
+var playerY = 100;
+var playerFriction = 20;
+
+var playerSpeed = 1.00;
+
+var playerImg = new Image();
+
+playerImg.src = 'img/baseSprite.png';
 
 //sprite object
 var spriteObject =
@@ -204,6 +215,7 @@ function update()
     }
     //Render the game
     render();
+    playerController(); //function located in player.js, handles movement.
 }
 
 function loadHandler()
@@ -328,3 +340,29 @@ function endGame()
 {
     console.log("game over");
 }
+
+
+//DaveTheMedic-jumping
+function playerController(){
+    if(moveRight && !moveLeft){
+        playerXVelocity = -playerSpeed;
+    }
+    if(moveLeft && !moveRight){
+        playerXVelocity = +playerSpeed;
+    }
+    if(playerXVelocity > 0){
+        for(var i = 0; i < playerFriction; i++) {
+            playerXVelocity--
+        }
+    }
+    if(playerXVelocity < 0){
+        for(var i = 0; i < playerFriction; i++) {
+            playerXVelocity++
+        }
+    }
+    playerX += playerXVelocity;
+    drawingSurface.drawImage(playerImg, playerX, playerY);
+
+
+}
+//temp ^
