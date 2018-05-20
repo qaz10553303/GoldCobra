@@ -67,13 +67,18 @@ image.src = "img/mapSpriteSheet.png";
 assetsToLoad.push(image);
 
 //game variables
-var playerXVelocity;
-var playerX = 30;
-var playerYVelocity;
+var playerXVelocity = 0.00;
+var playerX = 100;
+var playerYVelocity = 0.00;
 var playerY = 100;
-var playerFriction = 20;
+var playerFriction = 0.7; //higher value, more stick.
+var playerGrounded = true;
+var playerJumpHeight = 5.00;
+var playerGravity = 0;
+var playerGravityDefault = 0.098;
+var playerGravityScale = 0.01;
 
-var playerSpeed = 1.00;
+var playerSpeed = 4.00;
 
 var playerImg = new Image();
 
@@ -215,7 +220,9 @@ function update()
     }
     //Render the game
     render();
-    playerController(); //function located in player.js, handles movement.
+    playerController();
+    drawingSurface.drawImage(playerImg, playerX, playerY);
+     //function located in player.js, handles movement.
 }
 
 function loadHandler()
@@ -344,25 +351,104 @@ function endGame()
 
 //DaveTheMedic-jumping
 function playerController(){
-    if(moveRight && !moveLeft){
-        playerXVelocity = -playerSpeed;
+
+    //changing movement direction and velocity speed
+    if(moveRight && !moveLeft ){
+        playerXVelocity = playerSpeed;
     }
     if(moveLeft && !moveRight){
-        playerXVelocity = +playerSpeed;
+        playerXVelocity = -playerSpeed;
     }
-    if(playerXVelocity > 0){
-        for(var i = 0; i < playerFriction; i++) {
-            playerXVelocity--
+    if(moveUp){
+        if(playerGrounded /*|| doubleJumpAvailable*/){
+            playerYVelocity = -playerJumpHeight;
+            playerGrounded = false;
         }
     }
-    if(playerXVelocity < 0){
-        for(var i = 0; i < playerFriction; i++) {
-            playerXVelocity++
+
+    //applying friction and gravity effect
+    if(playerXVelocity > 0 && !moveRight){
+        playerXVelocity = playerXVelocity - playerFriction;
+        if(playerXVelocity < 0.5)
+            playerXVelocity = 0;
+    }
+    if(playerXVelocity < 0 && !moveLeft){
+        playerXVelocity = playerXVelocity + playerFriction;
+        if(playerXVelocity > 0.5)
+            playerXVelocity = 0;
+    }
+    if(playerYVelocity > 0 || !playerGrounded){
+        playerYVelocity += playerGravity;
+        playerGravity += playerGravityScale;
+    }
+
+    //Resetting the force of gravity
+    if(playerGrounded){
+        playerGravity = playerGravityDefault;
+    }
+
+    //applying movement to characters, preventing from going out of bounds
+    if(playerX <= 750 && playerX >= 0) {
+        playerX = playerX + playerXVelocity;
+    }else{
+        if(playerX > 750){
+            playerX = 750;
+        }
+        if(playerX < 0){
+            playerX = 0;
         }
     }
-    playerX += playerXVelocity;
-    drawingSurface.drawImage(playerImg, playerX, playerY);
+    playerY += playerYVelocity;
+
+    //grounding nana :bless:
+    /*if(getTileBelowType(mapArray) != 0){
+        if(playerY >= (getTileBelowY(mapArray) * 50) + 40){
+            playerGrounded = true;
+            playerY = (getTileBelowY(mapArray) * 50) + 50
+        }
 
 
+
+    }*/
+    //console.log(getTileInType());
+}
+
+
+//tile finder/selector
+//----ERROR----
+//Something is wrong with the way this code returns the variable.
+function getTileInType(mapArray){
+    var tileX, tileY;
+    tileX = Math.ceil(playerX/50) - 1; // subtract one to work with array
+    tileY = Math.ceil(playerY/50) - 1;
+    //console.log("Tile in coords: x="+tileX+" y="+tileY);
+    return mapArray[0][0];
+}
+function getTileBelowType(mapArray){
+    var tileX, tileY;
+    tileX = Math.ceil(playerX/50) - 1; // subtract one to work with array
+    tileY = Math.ceil(playerY/50) - 2; // subtract two to find tile below
+    //console.log("Tile below coords: x="+tileX+" y="+tileY);
+    if(tileY <= 15){
+        console.log(mapArray[tileY[tileX]]);
+        return mapArray[tileY[tileX]];
+    }
+}
+//----ERROR----
+
+function getTileX(mapArray){
+    var tileX;
+    tileX = Math.ceil(playerX/50) - 1; // subtract one to work with array
+    return tileX;
+}
+function getTileY(mapArray){
+    var tileY;
+    tileY = Math.ceil(playerY/50) - 1; // subtract one to work with array
+    return tileY;
+}
+function getTileBelowY(mapArray){
+    var tileY;
+    tileY = Math.ceil(playerY/50) - 2; // subtract one to work with array
+    return tileY;
 }
 //temp ^
