@@ -1,4 +1,3 @@
-//test//test
 var mainStage = document.getElementById("mainStage");
 var drawingSurface = mainStage.getContext("2d");
 
@@ -22,7 +21,7 @@ var spaceBar = false;
 //Sample 2D map array system
 var mapArray = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,6,5,2,0,1,0,1,0,1,0,1,0,1,0,1],
@@ -70,13 +69,15 @@ assetsToLoad.push(image);
 var playerXVelocity = 0.00;
 var playerX = 100;
 var playerYVelocity = 0.00;
-var playerY = 100;
+var playerY = 150;
 var playerFriction = 0.7; //higher value, more stick.
 var playerGrounded = true;
 var playerJumpHeight = 5.00;
 var playerGravity = 0;
 var playerGravityDefault = 0.098;
 var playerGravityScale = 0.01;
+var moveLeftDisabled = false;
+var moveRightDisabled = false;
 
 var playerSpeed = 4.00;
 
@@ -388,29 +389,46 @@ function playerController(){
     }
 
     //applying movement to characters, preventing from going out of bounds
-    if(playerX <= 750 && playerX >= 0) {
-        playerX = playerX + playerXVelocity;
-    }else{
-        if(playerX > 750){
+        if(playerX > 0 && playerX < 750) {
+            playerX = playerX + playerXVelocity;
+        }
+
+        if(moveLeftDisabled && moveRight && !moveLeft){
+                playerX = playerX + playerXVelocity;
+                moveLeftDisabled = false;
+        }
+        else if(moveRightDisabled && moveLeft && !moveRight)
+        {
+            playerX = playerX + playerXVelocity;
+            moveRightDisabled = false;
+        }
+        if(playerX >= 750){
             playerX = 750;
+            moveRightDisabled = true;
         }
-        if(playerX < 0){
+        if(playerX <= 0){
             playerX = 0;
+            moveLeftDisabled = true;
         }
-    }
     playerY += playerYVelocity;
+    //console.log("left disabled: " + moveLeftDisabled + " right disabled: " + moveRightDisabled);
 
     //grounding nana :bless:
-    /*if(getTileBelowType(mapArray) != 0){
-        if(playerY >= (getTileBelowY(mapArray) * 50) + 40){
+    if(getTileBelowType(mapArray) != 0){
+        if(playerY >= (getTileBelowY(mapArray) * 50) - 50){
             playerGrounded = true;
             playerY = (getTileBelowY(mapArray) * 50) + 50
         }
-
-
-
-    }*/
-    //console.log(getTileInType());
+    }
+    //making nana fall :evil:
+    if(getTileBelowType(mapArray) == 0){
+        playerGrounded = false;
+    }
+    console.log(getTileBelowType(mapArray));
+    console.log(playerGrounded);
+    console.log("playerGravityDefault" + playerGravityDefault);
+    console.log("playerGravity" + playerGravity);
+    console.log("playerGravityScale" + playerGravityScale);
 }
 
 
@@ -419,20 +437,20 @@ function playerController(){
 //Something is wrong with the way this code returns the variable.
 function getTileInType(mapArray){
     var tileX, tileY;
-    tileX = Math.ceil(playerX/50) - 1; // subtract one to work with array
-    tileY = Math.ceil(playerY/50) - 1;
+    tileX = Math.floor((playerX+25)/50);
+    tileY = Math.floor((playerY+25)/50);
     //console.log("Tile in coords: x="+tileX+" y="+tileY);
-    return mapArray[0][0];
+    //console.log("real x: " + playerX + " real y: " + playerY);
+    var tileType = mapArray[tileY][tileX];
+    return tileType;
 }
 function getTileBelowType(mapArray){
     var tileX, tileY;
-    tileX = Math.ceil(playerX/50) - 1; // subtract one to work with array
-    tileY = Math.ceil(playerY/50) - 2; // subtract two to find tile below
+    tileX = Math.floor((playerX+25)/50);
+    tileY = Math.floor((playerY+25)/50) - 1; // subtract one to find tile below
     //console.log("Tile below coords: x="+tileX+" y="+tileY);
-    if(tileY <= 15){
-        console.log(mapArray[tileY[tileX]]);
-        return mapArray[tileY[tileX]];
-    }
+        console.log(mapArray[tileY][tileX]);
+        return mapArray[tileY][tileX];
 }
 //----ERROR----
 
