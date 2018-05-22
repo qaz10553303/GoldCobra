@@ -1,0 +1,31 @@
+
+var caneList = {};
+
+	Cane = function (id,x,y,spdx,spdy,width,height)
+		{
+			
+			x:x,
+			spdx:spdx,
+			y:y,
+			spdy:spdy,
+			Name:'CaneAttack',
+			id:id,
+			width:width,
+			height:height,
+			color:'brown',
+		};
+		caneList[id] = asd;
+
+		var x = player.x;
+        	var y = player.y;
+        	var height = 10;
+        	var width = 10;
+        	var id = Math.random();
+       
+        	var angle = Math.random()*360;
+
+        	var spdX = Math.cos(angle/180*Math.PI)*5;
+
+        	var spdY = Math.sin(angle/180*Math.PI)*5;
+
+        	Cane(id,x,y,spdX,spdY,width,height);
