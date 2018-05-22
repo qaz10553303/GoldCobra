@@ -20,7 +20,7 @@ var spaceBar = false;
 
 //Sample 2D map array system
 var mapArray = [
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -29,6 +29,12 @@ var mapArray = [
     [1,1,1,1,0,1,1,1,0,1,0,0,0,0,0,1],
     [1,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1],
     [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1]
 ];
 
@@ -352,9 +358,8 @@ function endGame()
 
 //DaveTheMedic-jumping
 function playerController(){
-
     //changing movement direction and velocity speed
-    if(moveRight && !moveLeft ){
+    if(moveRight && !moveLeft){
         playerXVelocity = playerSpeed;
     }
     if(moveLeft && !moveRight){
@@ -378,18 +383,21 @@ function playerController(){
         if(playerXVelocity > 0.5)
             playerXVelocity = 0;
     }
-    if(playerYVelocity > 0 || !playerGrounded){
+    if(!playerGrounded){
         playerYVelocity += playerGravity;
         playerGravity += playerGravityScale;
+        playerY += playerYVelocity;
     }
 
     //Resetting the force of gravity
     if(playerGrounded){
         playerGravity = playerGravityDefault;
+        playerYVelocity = 0;
+        //playerY = getTileBelowY(mapArray) + 1;
     }
 
     //applying movement to characters, preventing from going out of bounds
-        if(playerX > 0 && playerX < 750) {
+        if(playerX > 0 && playerX < 750 && !(moveLeftDisabled || moveRightDisabled)) {
             playerX = playerX + playerXVelocity;
         }
 
@@ -410,25 +418,34 @@ function playerController(){
             playerX = 0;
             moveLeftDisabled = true;
         }
-    playerY += playerYVelocity;
+    if(getTileRightType(mapArray) != 0 && getTileRightType(mapArray) != undefined){
+        moveRightDisabled = true;
+    }else{
+        moveRightDisabled = false;
+    }
+    if(getTileLeftType(mapArray) != 0 && getTileRightType(mapArray) != undefined){
+        moveLeftDisabled = true;
+    }else{
+        moveLeftDisabled = false;
+    }
+
     //console.log("left disabled: " + moveLeftDisabled + " right disabled: " + moveRightDisabled);
 
     //grounding nana :bless:
     if(getTileBelowType(mapArray) != 0){
-        if(playerY >= (getTileBelowY(mapArray) * 50) - 50){
-            playerGrounded = true;
-            playerY = (getTileBelowY(mapArray) * 50) + 50
-        }
+        playerGrounded = true;
+        //playerY = getTileBelowY(mapArray) * 50 + 1;
     }
     //making nana fall :evil:
     if(getTileBelowType(mapArray) == 0){
         playerGrounded = false;
     }
-    console.log(getTileBelowType(mapArray));
-    console.log(playerGrounded);
-    console.log("playerGravityDefault" + playerGravityDefault);
-    console.log("playerGravity" + playerGravity);
-    console.log("playerGravityScale" + playerGravityScale);
+    //console.log(getTileBelowType(mapArray));
+    //console.log("player on ground:" + playerGrounded);
+    //console.log("playerGravityDefault" + playerGravityDefault);
+    //console.log("playerGravity" + playerGravity);
+    //console.log("playerGravityScale" + playerGravityScale);
+    //console.log("Player y velocity: " + playerYVelocity)
 }
 
 
@@ -447,26 +464,42 @@ function getTileInType(mapArray){
 function getTileBelowType(mapArray){
     var tileX, tileY;
     tileX = Math.floor((playerX+25)/50);
-    tileY = Math.floor((playerY+25)/50) - 1; // subtract one to find tile below
+    tileY = Math.floor((playerY)/50) + 1;
     //console.log("Tile below coords: x="+tileX+" y="+tileY);
-        console.log(mapArray[tileY][tileX]);
-        return mapArray[tileY][tileX];
+    //console.log(mapArray[tileY][tileX]);
+    return mapArray[tileY][tileX];
+}
+function getTileRightType(mapArray){
+    var tileX, tileY;
+    tileX = Math.floor((playerX+25)/50) + 1;
+    tileY = Math.floor((playerY)/50);
+    console.log("Tile right coords: x="+tileX+" y="+tileY);
+    console.log("Right type: " + mapArray[tileY][tileX]);
+    return mapArray[tileY][tileX];
+}
+function getTileLeftType(mapArray){
+    var tileX, tileY;
+    tileX = Math.floor((playerX+25)/50) - 1;
+    tileY = Math.floor((playerY)/50);
+    console.log("Tile left coords: x="+tileX+" y="+tileY);
+    console.log("Left type:" + mapArray[tileY][tileX]);
+    return mapArray[tileY][tileX];
 }
 //----ERROR----
 
 function getTileX(mapArray){
     var tileX;
-    tileX = Math.ceil(playerX/50) - 1; // subtract one to work with array
+    tileX = Math.floor((playerX+25)/50);
     return tileX;
 }
 function getTileY(mapArray){
     var tileY;
-    tileY = Math.ceil(playerY/50) - 1; // subtract one to work with array
+    tileY = Math.floor((playerY)/50);
     return tileY;
 }
 function getTileBelowY(mapArray){
     var tileY;
-    tileY = Math.ceil(playerY/50) - 2; // subtract one to work with array
+    tileY = Math.floor((playerY)/50) + 1;
     return tileY;
 }
 //temp ^
