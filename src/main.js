@@ -23,9 +23,9 @@ var mapArray = [
     [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,6,5,2,0,1,0,1,0,1,0,1,0,1,0,1],
-    [1,1,1,1,0,1,1,1,0,1,0,1,1,1,1,1],
+    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+    [1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,1,1,1,0,1,1,1,0,1,0,0,0,0,0,1],
     [1,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1],
     [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -418,13 +418,18 @@ function playerController(){
             playerX = 0;
             moveLeftDisabled = true;
         }
-    if(getTileRightType(mapArray) != 0 && getTileRightType(mapArray) != undefined){
-        moveRightDisabled = true;
+    console.log("tile x: " + getTileRightX(mapArray)*50);
+    if(getTileRightType(mapArray) != 0){
+        var tempTileX = getTileRightX(mapArray)*50;
+        if(tempTileX - playerX <= 50)
+            moveRightDisabled = true;
     }else{
         moveRightDisabled = false;
     }
-    if(getTileLeftType(mapArray) != 0 && getTileRightType(mapArray) != undefined){
-        moveLeftDisabled = true;
+    if(getTileLeftType(mapArray) != 0){
+        var tempTileX = getTileLeftX(mapArray)*50;
+        if(playerX - (tempTileX+50) <= 0)
+            moveLeftDisabled = true;
     }else{
         moveLeftDisabled = false;
     }
@@ -449,9 +454,7 @@ function playerController(){
 }
 
 
-//tile finder/selector
-//----ERROR----
-//Something is wrong with the way this code returns the variable.
+//tile finder/selector functions
 function getTileInType(mapArray){
     var tileX, tileY;
     tileX = Math.floor((playerX+25)/50);
@@ -473,19 +476,18 @@ function getTileRightType(mapArray){
     var tileX, tileY;
     tileX = Math.floor((playerX+25)/50) + 1;
     tileY = Math.floor((playerY)/50);
-    console.log("Tile right coords: x="+tileX+" y="+tileY);
-    console.log("Right type: " + mapArray[tileY][tileX]);
+    //console.log("Tile right coords: x="+tileX+" y="+tileY);
+    //console.log("Right type: " + mapArray[tileY][tileX]);
     return mapArray[tileY][tileX];
 }
 function getTileLeftType(mapArray){
     var tileX, tileY;
     tileX = Math.floor((playerX+25)/50) - 1;
     tileY = Math.floor((playerY)/50);
-    console.log("Tile left coords: x="+tileX+" y="+tileY);
-    console.log("Left type:" + mapArray[tileY][tileX]);
+    //console.log("Tile left coords: x="+tileX+" y="+tileY);
+    //console.log("Left type:" + mapArray[tileY][tileX]);
     return mapArray[tileY][tileX];
 }
-//----ERROR----
 
 function getTileX(mapArray){
     var tileX;
@@ -502,4 +504,13 @@ function getTileBelowY(mapArray){
     tileY = Math.floor((playerY)/50) + 1;
     return tileY;
 }
-//temp ^
+function getTileRightX(mapArray) {
+    var tileX;
+    tileX = Math.floor((playerX + 25) / 50) + 1;
+    return tileX;
+}
+function getTileLeftX(mapArray){
+    var tileX;
+    tileX = Math.floor((playerX+25)/50) - 1;
+    return tileX;
+}
