@@ -18,6 +18,8 @@ var moveDown = false;
 var moveRight = false;
 var moveLeft = false;
 var spaceBar = false;
+var shiftKey = false;
+var fkey = false;
 
 
 //Sample 2D map array system
@@ -136,6 +138,12 @@ function onKeyDown(event) {
         case SPACE:
             spaceBar = true;
             break;
+        case SHIFT:
+            shiftKey = true;
+            break;
+        case F:
+            fkey = true;
+            break;
     }
 }
 
@@ -159,7 +167,12 @@ function onKeyUp(event) {
         case SPACE:
             spaceBar = false;
             break;
-
+        case SHIFT:
+            shiftKey = false;
+            break;
+        case F:
+            fkey = false;
+            break;
     }
 }
 
