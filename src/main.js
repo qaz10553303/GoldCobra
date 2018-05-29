@@ -9,6 +9,8 @@ var DOWN = 40;
 var RIGHT = 39;
 var LEFT = 37;
 var SPACE = 32;
+var SHIFT = 16
+var F = 70;
 
 
 var moveUp = false;
