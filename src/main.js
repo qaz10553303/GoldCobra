@@ -76,7 +76,7 @@ var playerXVelocity = 0.00;
 var playerX = 100;
 var playerYVelocity = 0.00;
 var playerY = 150;
-var playerFriction = 0.7; //higher value, more stick.
+var playerFriction = 999; //higher value, more stick.
 var playerGrounded = true;
 var playerJumpHeight = 5.00;
 var playerGravity = 0;
@@ -383,17 +383,21 @@ function playerController(){
         if(playerXVelocity > 0.5)
             playerXVelocity = 0;
     }
+
     if(!playerGrounded){
         playerYVelocity += playerGravity;
         playerGravity += playerGravityScale;
-        playerY += playerYVelocity;
+        if (getTileBelowY(mapArray) != 0) { // ADDED THIS CHECK HERE
+            playerY += playerYVelocity;
+        }
     }
 
     //Resetting the force of gravity
     if(playerGrounded){
         playerGravity = playerGravityDefault;
         playerYVelocity = 0;
-        //playerY = getTileBelowY(mapArray) + 1;
+
+        //playerY = getTileBelowY(mapArray) + 1; CHANGED HERE
     }
 
     //applying movement to characters, preventing from going out of bounds
