@@ -88,6 +88,7 @@ var moveRightDisabled = false;
 var playerSpeed = 4.00;
 
 var playerImg = new Image();
+var spriteRes = 50;//in pixels
 
 playerImg.src = 'img/baseSprite.png';
 
@@ -387,9 +388,11 @@ function playerController(){
     if(!playerGrounded){
         playerYVelocity += playerGravity;
         playerGravity += playerGravityScale;
-        if (getTileBelowY(mapArray) != 0) { // ADDED THIS CHECK HERE
+        if (!(playerYVelocity < 0 && getTileAboveY(mapArray) == 0)  && !(playerYVelocity > 0 && getTileBelowY(mapArray) == 0)) { // ADDED THIS CHECK HERE
             playerY += playerYVelocity;
-        }
+        }/* else {
+            playerY = getTileBelowY(mapArray) * spriteRes + 1;
+        }*/
     }
 
     //Resetting the force of gravity
@@ -401,11 +404,18 @@ function playerController(){
     }
 
     //applying movement to characters, preventing from going out of bounds
-        if(playerX > 0 && playerX < 750 && !(moveLeftDisabled || moveRightDisabled)) {
-            playerX = playerX + playerXVelocity;
+        if(playerX > 0 && playerX < 750) {//!(moveLeftDisabled || moveRightDisabled)) {
+            if (playerXVelocity > 0 && getTileRightX(mapArray) != 0) {
+                playerX = getTileX(mapArray) * spriteRes;
+            } else if (playerXVelocity < 0 && getTileLeftX(mapArray) != 0) {
+                playerX = getTileX(mapArray) * spriteRes;
+            } else {
+              playerX = playerX + playerXVelocity;
+            }
+            
         }
 
-        if(moveLeftDisabled && moveRight && !moveLeft){
+        /*if(moveLeftDisabled && moveRight && !moveLeft){
                 playerX = playerX + playerXVelocity;
                 moveLeftDisabled = false;
         }
@@ -413,7 +423,7 @@ function playerController(){
         {
             playerX = playerX + playerXVelocity;
             moveRightDisabled = false;
-        }
+        }*/
         if(playerX >= 750){
             playerX = 750;
             moveRightDisabled = true;
@@ -422,17 +432,17 @@ function playerController(){
             playerX = 0;
             moveLeftDisabled = true;
         }
-    console.log("tile x: " + getTileRightX(mapArray)*50);
+    console.log("tile x: " + getTileRightX(mapArray)*spriteRes);
     if(getTileRightType(mapArray) != 0){
-        var tempTileX = getTileRightX(mapArray)*50;
-        if(tempTileX - playerX <= 50)
+        var tempTileX = getTileRightX(mapArray)*spriteRes;
+        if(tempTileX - playerX <= spriteRes)
             moveRightDisabled = true;
     }else{
         moveRightDisabled = false;
     }
     if(getTileLeftType(mapArray) != 0){
-        var tempTileX = getTileLeftX(mapArray)*50;
-        if(playerX - (tempTileX+50) <= 0)
+        var tempTileX = getTileLeftX(mapArray)*spriteRes;
+        if(playerX - (tempTileX+spriteRes) <= 0)
             moveLeftDisabled = true;
     }else{
         moveLeftDisabled = false;
@@ -441,9 +451,9 @@ function playerController(){
     //console.log("left disabled: " + moveLeftDisabled + " right disabled: " + moveRightDisabled);
 
     //grounding nana :bless:
-    if(getTileBelowType(mapArray) != 0){
+    if(getTileBelowType(mapArray) != 0 && !playerGrounded){
         playerGrounded = true;
-        //playerY = getTileBelowY(mapArray) * 50 + 1;
+        playerY = (getTileBelowY(mapArray)-1) * spriteRes;
     }
     //making nana fall :evil:
     if(getTileBelowType(mapArray) == 0){
@@ -461,33 +471,41 @@ function playerController(){
 //tile finder/selector functions
 function getTileInType(mapArray){
     var tileX, tileY;
-    tileX = Math.floor((playerX+25)/50);
-    tileY = Math.floor((playerY+25)/50);
+    tileX = Math.floor((playerX+25)/spriteRes);
+    tileY = Math.floor((playerY+25)/spriteRes);
     //console.log("Tile in coords: x="+tileX+" y="+tileY);
     //console.log("real x: " + playerX + " real y: " + playerY);
     var tileType = mapArray[tileY][tileX];
     return tileType;
 }
+function getTileAboveType(mapArray){
+    var tileX, tileY;
+    tileX = Math.floor((playerX+25)/spriteRes);
+    tileY = Math.floor((playerY)/spriteRes) - 1;
+    //console.log("Tile below coords: x="+tileX+" y="+tileY);
+    //console.log(mapArray[tileY][tileX]);
+    return mapArray[tileY][tileX];
+}
 function getTileBelowType(mapArray){
     var tileX, tileY;
-    tileX = Math.floor((playerX+25)/50);
-    tileY = Math.floor((playerY)/50) + 1;
+    tileX = Math.floor((playerX+25)/spriteRes);
+    tileY = Math.floor((playerY)/spriteRes) + 1;
     //console.log("Tile below coords: x="+tileX+" y="+tileY);
     //console.log(mapArray[tileY][tileX]);
     return mapArray[tileY][tileX];
 }
 function getTileRightType(mapArray){
     var tileX, tileY;
-    tileX = Math.floor((playerX+25)/50) + 1;
-    tileY = Math.floor((playerY)/50);
+    tileX = Math.floor((playerX+25)/spriteRes) + 1;
+    tileY = Math.floor((playerY)/spriteRes);
     //console.log("Tile right coords: x="+tileX+" y="+tileY);
     //console.log("Right type: " + mapArray[tileY][tileX]);
     return mapArray[tileY][tileX];
 }
 function getTileLeftType(mapArray){
     var tileX, tileY;
-    tileX = Math.floor((playerX+25)/50) - 1;
-    tileY = Math.floor((playerY)/50);
+    tileX = Math.floor((playerX+25)/spriteRes) - 1;
+    tileY = Math.floor((playerY)/spriteRes);
     //console.log("Tile left coords: x="+tileX+" y="+tileY);
     //console.log("Left type:" + mapArray[tileY][tileX]);
     return mapArray[tileY][tileX];
@@ -495,26 +513,31 @@ function getTileLeftType(mapArray){
 
 function getTileX(mapArray){
     var tileX;
-    tileX = Math.floor((playerX+25)/50);
+    tileX = Math.floor((playerX+25)/spriteRes);
     return tileX;
 }
 function getTileY(mapArray){
     var tileY;
-    tileY = Math.floor((playerY)/50);
+    tileY = Math.floor((playerY)/spriteRes);
+    return tileY;
+}
+function getTileAboveY(mapArray){
+    var tileY;
+    tileY = Math.floor((playerY)/spriteRes) - 1;
     return tileY;
 }
 function getTileBelowY(mapArray){
     var tileY;
-    tileY = Math.floor((playerY)/50) + 1;
+    tileY = Math.floor((playerY)/spriteRes) + 1;
     return tileY;
 }
 function getTileRightX(mapArray) {
     var tileX;
-    tileX = Math.floor((playerX + 25) / 50) + 1;
+    tileX = Math.floor((playerX + 25) / spriteRes) + 1;
     return tileX;
 }
 function getTileLeftX(mapArray){
     var tileX;
-    tileX = Math.floor((playerX+25)/50) - 1;
+    tileX = Math.floor((playerX+25)/spriteRes) - 1;
     return tileX;
 }
