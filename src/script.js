@@ -89,7 +89,7 @@ function drawUI() // draws UI ontop of everything else currently showing debug i
     uiSurface.clearRect(0,0,600,100);
     uiSurface.font = "10px Courier New";
     uiSurface.fillText(keysPressed.toString(),10,10);
-    uiSurface.fillText(character.canJump,30,10);
+    uiSurface.fillText(character.jumpCharges,30,10);
     uiSurface.fillText(character.moveVector.toString(),200,30);
 }
 
@@ -101,6 +101,9 @@ function userInputHandler() //accepts and applies player input
         character.moveVector[0]+=1;
     if(keysPressed.includes(38))//up
         character.jump();
+    if(keysPressed.includes(32))//space
+        character.dash();
+
 }
 
 function gameLogic() //updates all game functions and ai
@@ -113,8 +116,13 @@ function generateRoomMap () //called by floor map generator to generate each roo
     let obj = [];
     obj.features = [];
     obj.enemies = [];
-    for(let i =0;i<20;i++)
-        obj.features.push(returnTile(i*50,400,0)); // top left corner
+    for(let i =0;i<9;i++)
+        obj.features.push(returnTile(i*50,400,0));
+
+
+    for(let i =0;i<12;i++)
+        obj.features.push(returnTile(i*50,100,0));
+
 
     obj.features.push(returnTile(200,300,0));
     obj.features.push(returnTile(200,350,0));
@@ -123,11 +131,18 @@ function generateRoomMap () //called by floor map generator to generate each roo
     obj.features.push(returnTile(450,230,0));
     obj.features.push(returnTile(0,350,0));
 
+    obj.features.push(returnTile(400,500,0));
+    obj.features.push(returnTile(400,450,0));
+    obj.features.push(returnTile(400,550,0));
+
+    obj.features.push(returnTile(500,500,0));
+    obj.features.push(returnTile(500,450,0));
+    obj.features.push(returnTile(500,550,0));
+    obj.features.push(returnTile(550,450,0));
 
 
+    obj.features.push(returnTile(450,550,1));
 
-    for(let i =0;i<20;i++)
-        obj.features.push(returnTile(i*50,100,0)); // top left corner
 
     return obj;
 }
@@ -149,25 +164,46 @@ function createCharacter() //generates and contains game character
     obj.sprite = [10,5,30,40];
     obj.attackChargeTimer = 0; //keeps track of reload time for weapon
     obj.maxSpeed= 5; //movement speed
-    obj.canJump = false;
+    obj.jumpCharges = 0;
+    obj.maxJumpCharges = 2;
+    obj.jumpTimer = 0;
+    obj.dashCd = 0;
     obj.attack = function()
     {
 
     };
     obj.jump = function()
     {
-        if(this.canJump)
-            character.moveVector[1] = -4;
+        if(this.jumpCharges >0 && this.jumpTimer <= 0)
+        {
+            if(this.jumpCharges/this.maxJumpCharges === 1)
+                this.moveVector[1] = -4;
+            else
+                this.moveVector[1] = -6*(this.jumpCharges/this.maxJumpCharges)
+            this.jumpCharges--;
+	    this.jumpTimer = 20;
+        }
+
+    };
+    obj.dash = function()
+    {
+        if(this.dashCd <= 0)
+        {
+            character.moveVector[0] *= 15;
+            this.dashCd = 60;
+        }
 
     };
     obj.tick = function ()
     {;
         this.coordinates[0] += this.moveVector[0];
         this.coordinates[1] += this.moveVector[1];
-        this.moveVector[0] = Math.floor(0.5*Math.abs(this.moveVector[0])); //friction
+        this.moveVector[0] = Math.trunc(0.5*this.moveVector[0]); //friction
         this.moveVector[1] += 0.1; //gravity
-        this.canJump = false;
         collisionSystem();
+        if(this.dashCd >= 0)
+            this.dashCd--;
+        this.jumpTimer--;
     };
     obj.draw = function()
     {
@@ -190,6 +226,8 @@ function tileInfo(x,y,w,h,passable)
 function setTileList()
 {
     tileList.push(tileInfo(0,0,50,50,1)); //tile 0 basic block with collision
+    tileList.push(tileInfo(50,0,50,50,2)); //tile 0 basic block with collision
+
 }
 
 function collisionSystem()
@@ -203,6 +241,11 @@ function collisionSystem()
                if (tileList[currentRoom.features[i].tileNum].passable === 1)
                {
                    fineCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],currentRoom.features[i].x, currentRoom.features[i].y,tileList[currentRoom.features[i].tileNum].w, tileList[currentRoom.features[i].tileNum].h);
+               }
+	       if (tileList[currentRoom.features[i].tileNum].passable === 2)
+               {
+		   character.moveVector[1] = -8;
+		   character.maxJumpCharges = 2;
                }
            }
     }
@@ -223,21 +266,25 @@ function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to
 
     if (t_collision < b_collision && t_collision < l_collision && t_collision < r_collision )
     {
-        character.canJump = true;
-        character.moveVector[1]  -= (Math.abs(character.moveVector[1]));
-        character.coordinates[1]  -= 1;
+        character.jumpCharges = character.maxJumpCharges;
+        character.moveVector[1]  = 0;
+        character.coordinates[1]  -= t_collision;
     }
     else if (b_collision < t_collision && b_collision < l_collision && b_collision < r_collision)
     {
-        character.moveVector[1]  += (Math.abs(character.moveVector[1]));
+        character.moveVector[1]  = 0;
+        character.coordinates[1]  += b_collision;
     }
     else if (l_collision < r_collision && l_collision < t_collision && l_collision < b_collision)
     {
-        character.moveVector[0] -= 1;
+        character.moveVector[0] = 0;
+        character.coordinates[0]  -= l_collision;
+
     }
     else if (r_collision < l_collision && r_collision < t_collision && r_collision < b_collision )
     {
-        character.moveVector[0] += 1;
+        character.moveVector[0] = 0;
+        character.coordinates[0]  += r_collision;
     }
 }
 
@@ -253,6 +300,8 @@ function showHitboxes()  //dev tool to be removed in final
         fgSurface.beginPath();
         if (tileList[currentRoom.features[i].tileNum].passable === 1)
             fgSurface.strokeStyle = "green";
+ 	if (tileList[currentRoom.features[i].tileNum].passable === 2)
+            fgSurface.strokeStyle = "pink";
 
         fgSurface.rect(currentRoom.features[i].x, currentRoom.features[i].y, tileList[currentRoom.features[i].tileNum].w, tileList[currentRoom.features[i].tileNum].h);
         fgSurface.stroke();
