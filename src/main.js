@@ -24,23 +24,23 @@ var fkey = false;
 
 //Sample 2D map array system
 var mapArray = [
-    [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
-    [1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,0,1,1,1,0,1,0,0,0,0,0,1],
-    [1,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1]
+    [1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [7,0,0,0,0,2,0,2,0,2,0,2,0,2,0,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2],
+    [2,2,2,2,0,2,2,2,0,2,0,2,2,2,2,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2],
+    [2,2,2,2,0,2,2,2,0,2,0,0,0,0,0,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2],
+    [2,2,2,2,0,2,2,0,0,0,2,2,2,2,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [2,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,2,2,2,2,2,2,2,2,0,0],
+    [2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+    [2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0],
+    [2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0],
+    [2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0],
+    [2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0]
 ];
+
+
 
 //map code
 var EMPTY = 0;
@@ -109,6 +109,50 @@ var spriteObject =
         y: 0,
         visible: true
     };
+
+//This is defining how big the world space is that the player can explore it doesn't display anything
+var gameWorld =
+    {
+        x:0,
+        y:0,
+        width: mapArray[0].length * 50,
+        height: mapArray.length * 50
+    };
+
+
+//inner boundary "camera" that will be playable space that the player can see but will then also be impetus for visuals
+//for what the player will see as they push to the edge of the canvas
+
+//This playerCamera is also just the regular size of the canvas that we define it will also follow the player
+
+var playerCamera =
+    {
+        x: 0,
+        y:0,
+        width: mainStage.width,
+        height: mainStage.height,
+
+        rightInnerBoundary: function()
+        {
+            return this.x + (this.width * 0.75);
+        },
+        leftInnerBoundary: function()
+        {
+            return this.x + (this.width * 0.25);
+        },
+        topInnerBoundary: function()
+        {
+            return this.y + (this.height * 0.25);
+        },
+        bottomInnerBoundary: function()
+        {
+            return this.y + (this.height * 0.75);
+        }
+    };
+playerCamera.x = (gameWorld.x + gameWorld.width /2) - playerCamera.width/2;
+playerCamera.y = (gameWorld.y + gameWorld.height /2) - playerCamera.height / 2 ;
+
+
 
 //Game States
 var LOADING = 0;
@@ -212,6 +256,37 @@ function moveRect()
     }
 }
 
+function scrollCamera(player) {
+    if (player.x < playerCamera.leftInnerBoundary()) {
+        playerCamera.x = Math.max(0, Math.min
+        (
+            Math.floor(player.x - (playerCamera.width * 0.25)),
+            gameWorld.width - playerCamera.width
+        ));
+    }
+    if (player.y < playerCamera.topInnerBoundary()) {
+        playerCamera.y = Math.max(0, Math.min
+        (
+            Math.floor(player.y - (playerCamera.height * 0.25)),
+            gameWorld.height - playerCamera.height
+        ));
+    }
+    if (player.x + player.width > playerCamera.rightInnerBoundary()) {
+        playerCamera.x = Math.max(0, Math.min
+        (
+            Math.floor(player.x + player.width - (playerCamera.width * 0.75)),
+            gameWorld.width - playerCamera.width
+        ));
+    }
+    if (player.y + player.height > playerCamera.bottomInnerBoundary()) {
+        playerCamera.y = Math.max(0, Math.min
+        (
+            Math.floor(player.y + player.height - (playerCamera.height * 0.75)),
+            gameWorld.height - playerCamera.height
+        ));
+    }
+}
+
 update();
 
 function update()
@@ -235,6 +310,7 @@ function update()
 
         case PLAYING:
             moveRect();
+            scrollCamera();
             break;
 
         case OVER:
@@ -260,6 +336,7 @@ function loadHandler()
         gameState = BUILD_MAP;
     }
 }
+
 
 function buildMap(levelMap) {
     for (var row = 0; row < ROWS; row++) {
@@ -346,6 +423,15 @@ function buildMap(levelMap) {
 function render() {
     drawingSurface.clearRect(0, 0, mainStage.width, mainStage.height);
 
+    //saves the current state of the canvas to apply translational properties
+
+    drawingSurface.save();
+
+    /* translates the viewable canvas space through the playerCamera and shifts it towards the space that the player
+     decides to move to, it uses the inverse of the playerCamera coordinates to do this
+    */
+
+    drawingSurface.translate(-playerCamera.x, -playerCamera.y);
 
     //Display the sprites
     if (sprites.length !== 0) {
@@ -364,6 +450,7 @@ function render() {
         }
     }
     renderRect();
+    drawingSurface.restore();
 }
 
 function endGame()
