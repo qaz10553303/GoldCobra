@@ -9,7 +9,7 @@ var DOWN = 40;
 var RIGHT = 39;
 var LEFT = 37;
 var SPACE = 32;
-var SHIFT = 16
+var SHIFT = 16;
 var F = 70;
 
 
@@ -28,11 +28,11 @@ var mapArray = [
     [0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [7,0,0,0,0,2,0,2,0,2,0,2,0,2,0,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2],
+    [10,0,0,0,0,2,0,2,0,2,0,2,0,2,0,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2],
     [2,2,2,2,0,2,2,2,0,2,0,2,2,2,2,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2],
     [2,2,2,2,0,2,2,2,0,2,0,0,0,0,0,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2],
     [2,2,2,2,0,2,2,0,0,0,2,2,2,2,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [2,4,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,2,2,2,2,2,2,2,2,0,0],
+    [2,7,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,2,2,2,2,2,2,2,2,0,0],
     [2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
     [2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0],
     [2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0],
@@ -40,18 +40,24 @@ var mapArray = [
     [2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0]
 ];
 
+/*Empty: 0, Ceiling: 1, Floor: 2, Wood Floor: 3, Stone Floor: 4, Metal Floor: 5, Destroyable Wall: 6,
+Item: 7, Platform: 8, Notification: 9, Entrance: 10, Exit: 11
+*/
 
 
 //map code
 var EMPTY = 0;
 var CEILING = 1;
 var FLOOR = 2;
-var DESTROY_WALL = 3;
-var ITEM = 4;
-var PLATFORM = 5;
-var NOTIFICATION = 6;
-var ENTRANCE = 7;
-var EXIT = 8;
+var WOOD_FLOOR = 3;
+var STONE_FLOOR = 4;
+var METAL_FLOOR = 5;
+var DESTROY_WALL = 6;
+var ITEM = 7;
+var PLATFORM = 8;
+var NOTIFICATION = 9;
+var ENTRANCE = 10;
+var EXIT = 11;
 
 //size of each cell
 var SIZE = 50;
@@ -72,7 +78,7 @@ var assetsLoaded = 0;
 //loading the map sprite sheet image
 var image = new Image();
 image.addEventListener("load", loadHandler, false);
-image.src = "img/mapSpriteSheet.png";
+image.src = "img/spriteSheet1.png";
 assetsToLoad.push(image);
 
 //game variables
@@ -338,6 +344,10 @@ function loadHandler()
 }
 
 
+/*Empty: 0, Ceiling: 1, Floor: 2, Wood Floor: 3, Stone Floor: 4, Metal Floor: 5, Destroyable Wall: 6,
+Item: 7, Platform: 8, Notification: 9, Entrance: 10, Exit: 11
+*/
+
 function buildMap(levelMap) {
     for (var row = 0; row < ROWS; row++) {
         for (var column = 0; column < COLUMNS; column++) {
@@ -365,7 +375,33 @@ function buildMap(levelMap) {
                         sprites.push(floor);
                         break;
 
-                    case DESTROY_WALL: //number 3
+                    case WOOD_FLOOR: //number 3
+                        var woodFloor = Object.create(spriteObject);
+                        woodFloor.sourceX = mapSpriteSheetX;
+                        woodFloor.sourceY = mapSpriteSheetY;
+                        woodFloor.x = column * SIZE;
+                        woodFloor.y = row * SIZE;
+                        sprites.push(woodFloor);
+                        break;
+
+                    case STONE_FLOOR: //number 4
+                        var stoneFloor = Object.create(spriteObject);
+                        stoneFloor.sourceX = mapSpriteSheetX;
+                        stoneFloor.sourceY = mapSpriteSheetY;
+                        stoneFloor.x = column * SIZE;
+                        stoneFloor.y = row * SIZE;
+                        sprites.push(stoneFloor);
+                        break;
+
+                    case METAL_FLOOR: //number 5
+                        var metalFloor = Object.create(spriteObject);
+                        metalFloor.sourceX = mapSpriteSheetX;
+                        metalFloor.sourceY = mapSpriteSheetY;
+                        metalFloor.x = column * SIZE;
+                        metalFloor.y = row * SIZE;
+                        sprites.push(metalFloor);
+                        break;
+                    case DESTROY_WALL: //number 6
                         var wall = Object.create(spriteObject);
                         wall.sourceX = mapSpriteSheetX;
                         wall.sourceY = mapSpriteSheetY;
@@ -373,8 +409,7 @@ function buildMap(levelMap) {
                         wall.y = row * SIZE;
                         sprites.push(wall);
                         break;
-
-                    case ITEM: //number 4
+                    case ITEM: //number 7
                         var item = Object.create(spriteObject);
                         item.sourceX = mapSpriteSheetX;
                         item.sourceY = mapSpriteSheetY;
@@ -382,7 +417,7 @@ function buildMap(levelMap) {
                         item.y = row * SIZE;
                         sprites.push(item);
                         break;
-                    case PLATFORM: //map code number 5
+                    case PLATFORM: //map code number 8
                         var platform = Object.create(spriteObject);
                         platform.sourceX = mapSpriteSheetX;
                         platform.sourceY = mapSpriteSheetY;
@@ -390,7 +425,7 @@ function buildMap(levelMap) {
                         platform.y = row * SIZE;
                         sprites.push(platform);
                         break;
-                    case NOTIFICATION: //map code number 6
+                    case NOTIFICATION: //map code number 9
                         var notification = Object.create(spriteObject);
                         notification.sourceX = mapSpriteSheetX;
                         notification.sourceY = mapSpriteSheetY;
@@ -398,7 +433,7 @@ function buildMap(levelMap) {
                         notification.y = row * SIZE;
                         sprites.push(notification);
                         break;
-                    case ENTRANCE: //map code number 7
+                    case ENTRANCE: //map code number 10
                         var entrance = Object.create(spriteObject);
                         entrance.sourceX = mapSpriteSheetX;
                         entrance.sourceY = mapSpriteSheetY;
@@ -406,7 +441,7 @@ function buildMap(levelMap) {
                         entrance.y = row * SIZE;
                         sprites.push(entrance);
                         break;
-                    case EXIT: //map code number 8
+                    case EXIT: //map code number 11
                         var exit = Object.create(spriteObject);
                         exit.sourceX = mapSpriteSheetX;
                         exit.sourceY = mapSpriteSheetY;
