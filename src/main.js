@@ -1,8 +1,9 @@
 var mainStage = document.getElementById("mainStage");
 var drawingSurface = mainStage.getContext("2d");
 
-var fillRectX = 0;
-var fillRectY = 0;
+
+var playerX = 0;
+var playerY = 0;
 
 var UP = 38;
 var DOWN = 40;
@@ -27,7 +28,7 @@ var mapArray = [
     [1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1],
     [0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,9,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [10,0,0,0,0,2,0,2,0,2,0,2,0,2,0,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2],
     [2,2,2,2,0,2,2,2,0,2,0,2,2,2,2,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2],
     [2,2,2,2,0,2,2,2,0,2,0,0,0,0,0,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2],
@@ -67,7 +68,7 @@ var ROWS = mapArray.length;
 var COLUMNS = mapArray[0].length;
 
 //number of columns on map sprite sheet
-var mapSpriteSheetColumns = 8;
+var mapSpriteSheetColumns = 12;
 
 //arrays to store game objects
 var sprites = [];
@@ -81,6 +82,13 @@ image.addEventListener("load", loadHandler, false);
 image.src = "img/spriteSheet1.png";
 assetsToLoad.push(image);
 
+//loading the player sprite image
+let characterImage = new Image ();
+characterImage.src = "img/baseSprite.png";
+let player = createCharacter();
+
+
+/*
 //game variables
 var playerXVelocity = 0.00;
 var playerX = 100;
@@ -101,6 +109,8 @@ var playerImg = new Image();
 var spriteRes = 50;//in pixels
 
 playerImg.src = 'img/baseSprite.png';
+*/
+
 
 //sprite object
 var spriteObject =
@@ -155,6 +165,7 @@ var playerCamera =
             return this.y + (this.height * 0.75);
         }
     };
+
 playerCamera.x = (gameWorld.x + gameWorld.width /2) - playerCamera.width/2;
 playerCamera.y = (gameWorld.y + gameWorld.height /2) - playerCamera.height / 2 ;
 
@@ -227,67 +238,75 @@ function onKeyUp(event) {
 }
 
 
-//drawing rectangle shape as placeholder for game sprite
-function drawRect()
+
+function createCharacter()
 {
-    drawingSurface.fillStyle = "red";
-    drawingSurface.fillRect(fillRectX,fillRectY,60,60);
+    let obj = {};
+    obj.coordinates = [100,150]; //player characters coordinates stored as x,y pair and player movement vector
+    obj.moveVector = [0,0];//what directions the player is traveling only uses 1 0 and -1
+    obj.sprite = [10,5,30,40];
+    obj.draw = function()
+    {
+        drawingSurface.drawImage(characterImage, this.sprite[0], this.sprite[1], this.sprite[2], this.sprite[3],Math.floor(this.coordinates[0]), Math.floor(this.coordinates[1]), this.sprite[2], this.sprite[3]);
+    };
+    return (obj);
 }
 
-
-//rendering the shape
-function renderRect()
-{
-    drawRect();
-}
 
 //function to move the Rectangle shape
-function moveRect()
+function movePlayer()
 {
-    if (moveLeft && fillRectX > 0)
+
+//adds velocity to the player movement should a key be pressed
+    if (moveLeft && !moveRight)
     {
-        fillRectX -=5;
+        player.moveVector[0] -=1;
     }
-    if (moveRight && fillRectX < mainStage.width - 60)
+    if (moveRight && !moveLeft)
     {
-        fillRectX+=5;
+        player.moveVector[0]+= 1;
     }
-    if (moveUp && fillRectY > 0)
+    if (moveDown && !moveUp)
     {
-        fillRectY -=5;
+        player.moveVector[1]+=1;
     }
-    if (moveDown && fillRectY < mainStage.height - 60 )
+    if (moveUp && !moveDown)
     {
-        fillRectY+=5;
+       player.moveVector[1] -=1;
     }
+
+    player.moveVector[0] = Math.max(0, Math.min(player.moveVector[0], gameWorld.width - player.sprite[3]));
+    player.moveVector[1] = Math.max(0, Math.min(player.moveVector[1], gameWorld.height - player.sprite[4]));
+
 }
 
-function scrollCamera(player) {
-    if (player.x < playerCamera.leftInnerBoundary()) {
+
+function scrollCamera() {
+    if (player.moveVector[0] < playerCamera.leftInnerBoundary()) {
         playerCamera.x = Math.max(0, Math.min
         (
-            Math.floor(player.x - (playerCamera.width * 0.25)),
+            Math.floor(player.moveVector[0] - (playerCamera.width * 0.25)),
             gameWorld.width - playerCamera.width
         ));
     }
-    if (player.y < playerCamera.topInnerBoundary()) {
+    if (player.moveVector[1] < playerCamera.topInnerBoundary()) {
         playerCamera.y = Math.max(0, Math.min
         (
-            Math.floor(player.y - (playerCamera.height * 0.25)),
+            Math.floor(player.moveVector[1] - (playerCamera.height * 0.25)),
             gameWorld.height - playerCamera.height
         ));
     }
-    if (player.x + player.width > playerCamera.rightInnerBoundary()) {
+    if (player.moveVector[0] + player.sprite[3] > playerCamera.rightInnerBoundary()) {
         playerCamera.x = Math.max(0, Math.min
         (
-            Math.floor(player.x + player.width - (playerCamera.width * 0.75)),
+            Math.floor(player.moveVector[0] + player.sprite[3] - (playerCamera.width * 0.75)),
             gameWorld.width - playerCamera.width
         ));
     }
-    if (player.y + player.height > playerCamera.bottomInnerBoundary()) {
+    if (player.moveVector[1] + player.sprite[3] > playerCamera.bottomInnerBoundary()) {
         playerCamera.y = Math.max(0, Math.min
         (
-            Math.floor(player.y + player.height - (playerCamera.height * 0.75)),
+            Math.floor(player.moveVector[1] + player.sprite[4] - (playerCamera.height * 0.75)),
             gameWorld.height - playerCamera.height
         ));
     }
@@ -310,13 +329,12 @@ function update()
 
         case BUILD_MAP:
             buildMap(mapArray);
-            //createOtherObjects();
             gameState = PLAYING;
             break;
 
         case PLAYING:
-            moveRect();
-            scrollCamera();
+           movePlayer();
+           scrollCamera();
             break;
 
         case OVER:
@@ -325,8 +343,8 @@ function update()
     }
     //Render the game
     render();
-    playerController();
-    drawingSurface.drawImage(playerImg, playerX, playerY);
+    //playerController();
+    //drawingSurface.drawImage(playerImg, playerX, playerY);
      //function located in player.js, handles movement.
 }
 
@@ -348,12 +366,13 @@ function loadHandler()
 Item: 7, Platform: 8, Notification: 9, Entrance: 10, Exit: 11
 */
 
+
 function buildMap(levelMap) {
     for (var row = 0; row < ROWS; row++) {
         for (var column = 0; column < COLUMNS; column++) {
             var currentTile = levelMap[row][column];
             if (currentTile !== EMPTY) {
-                //Find the tile's X and Y positions on the tilesheet
+                //Find the tile's X and Y positions on the tile sheet
                 var mapSpriteSheetX = Math.floor((currentTile -1) % mapSpriteSheetColumns) *SIZE;
                 var mapSpriteSheetY = Math.floor((currentTile - 1) /mapSpriteSheetColumns) *SIZE;
                 switch (currentTile) {
@@ -455,20 +474,8 @@ function buildMap(levelMap) {
     }
 }
 
-function render() {
-    drawingSurface.clearRect(0, 0, mainStage.width, mainStage.height);
-
-    //saves the current state of the canvas to apply translational properties
-
-    drawingSurface.save();
-
-    /* translates the viewable canvas space through the playerCamera and shifts it towards the space that the player
-     decides to move to, it uses the inverse of the playerCamera coordinates to do this
-    */
-
-    drawingSurface.translate(-playerCamera.x, -playerCamera.y);
-
-    //Display the sprites
+function renderBackgroundSprites ()
+{
     if (sprites.length !== 0) {
         for (var i = 0; i < sprites.length; i++) {
             var sprite = sprites[i];
@@ -484,7 +491,26 @@ function render() {
             }
         }
     }
-    renderRect();
+}
+
+
+function render() {
+    drawingSurface.clearRect(0, 0, mainStage.width, mainStage.height);
+
+    //saves the current state of the canvas to apply translational properties
+
+    drawingSurface.save();
+
+    /* translates the viewable canvas space through the playerCamera and shifts it towards the space that the player
+     decides to move to, it uses the inverse of the playerCamera coordinates to do this
+    */
+
+    drawingSurface.translate(-playerCamera.x, -playerCamera.y);
+
+    //Display the sprites
+    renderBackgroundSprites();
+    player.draw();
+
     drawingSurface.restore();
 }
 
