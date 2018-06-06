@@ -128,14 +128,21 @@ var playerCamera =
         x: 0,
         y:0,
         width: mainStage.width,
-        height: mainStage.height,
-
+        height: mainStage.height
     };
 function updateCamera()
 {
 
-    playerCamera.x = (gameWorld.x + gameWorld.width / 2) - playerCamera.width / 2;
+    if ( player.x > (playerCamera.width / 2) && player.x < gameWorld.width - (playerCamera.width / 2) ) {
+        playerCamera.x = player.x - (playerCamera.width / 2);
+    }
+    if ( player.y > (playerCamera.height / 2) && player.y < gameWorld.height - (playerCamera.height / 2) ) {
+        playerCamera.y = player.y - (playerCamera.height / 2);
+    }
+
+   /* playerCamera.x = (gameWorld.x + gameWorld.width / 2) - playerCamera.width / 2;
     playerCamera.y = (gameWorld.y + gameWorld.height / 2) - playerCamera.height / 2;
+    */
 }
 
 
@@ -152,23 +159,29 @@ window.addEventListener("keyup", function (e) {keys[e.keyCode] = false;});
 function playerMove(e)
 {
     //up key
-    if (keys[38]) {
+    if (keys[38])
+    {
         player.y -= 5;
-        if (player.y - (player.height / 2) < playerCamera.y) {
+        if (player.y - (player.height / 2) < playerCamera.y)
+        {
             player.y = playerCamera.y + (player.height / 2);
         }
     }
     //down
-    if (keys[40]) {
+    if (keys[40])
+    {
         player.y += 5;
-        if (player.y + (player.height / 2) >= playerCamera.y + playerCamera.height) {
+        if (player.y + (player.height / 2) >= playerCamera.y + playerCamera.height)
+        {
             player.y = playerCamera.y + playerCamera.height - (player.height / 2);
         }
     }
     //left
-    if (keys[37]) {
+    if (keys[37])
+    {
         player.x -= 5;
-        if (player.x - (player.width / 2) < playerCamera.x) {
+        if (player.x - (player.width / 2) < playerCamera.x)
+        {
             player.x = playerCamera.x + (player.width / 2);
         }
     }
@@ -179,7 +192,7 @@ function playerMove(e)
         if (player.x + (player.width / 2) >= gameWorld.width) {
             player.x = playerCamera.x + playerCamera.width - (player.width / 2);
         }
-
+    }
     //f key
     if (keys[70])
     {
@@ -213,10 +226,13 @@ function createCharacter()
 
 function renderBackgroundSprites ()
 {
-    if (sprites.length !== 0) {
-        for (var i = 0; i < sprites.length; i++) {
+    if (sprites.length !== 0)
+    {
+        for (var i = 0; i < sprites.length; i++)
+        {
             var sprite = sprites[i];
-            if (sprite.visible) {
+            if (sprite.visible)
+            {
                 drawingSurface.drawImage
                 (
                     image,
@@ -251,6 +267,7 @@ function update()
             break;
 
         case PLAYING:
+
             playerMove();
             updateCamera();
             buildMap(mapArray);
@@ -290,14 +307,18 @@ function buildMap(levelMap)
     var drawTilesY = Math.floor((playerCamera.height/SIZE) + 1);
     var drawTilesX = Math.floor((playerCamera.width/SIZE) + 1);
 
-    for (var row = onYTile - drawTilesY; row < onYTile + drawTilesY; row++) {
-        for (var column = onXTile - drawTilesX; column < onXTile + drawTilesX; column++) {
-            var currentTile = levelMap[row][column];
-            if (currentTile !== EMPTY && row >= 0 && column >= 0 && row < mapArray.length && column < mapArray[row].length) {
+    for (var row = onYTile - drawTilesY; row < onYTile + drawTilesY; row++)
+    {
+        for (var column = onXTile - drawTilesX; column < onXTile + drawTilesX; column++)
+        {
+            if ( row >= 0 && column >= 0 && row < mapArray.length && column < mapArray[row].length)
+            {
+                var currentTile = levelMap[row][column];
                 //Find the tile's X and Y positions on the tile sheet
                 var mapSpriteSheetX = Math.floor((currentTile -1) % mapSpriteSheetColumns) *SIZE;
                 var mapSpriteSheetY = Math.floor((currentTile - 1) /mapSpriteSheetColumns) *SIZE;
-                switch (currentTile) {
+                switch (currentTile)
+                {
                     case CEILING: //number 1
                         var ceiling = Object.create(spriteObject);
                         ceiling.sourceX = mapSpriteSheetX;
@@ -396,8 +417,8 @@ function buildMap(levelMap)
     }
 }
 
-function render() {
-
+function render()
+{
     drawingSurface.clearRect(0, 0, mainStage.width, mainStage.height);
     //Display the sprites
     renderBackgroundSprites();
@@ -595,3 +616,4 @@ function getTileLeftX(mapArray){
     tileX = Math.floor((playerX+25)/spriteRes) - 1;
     return tileX;
 }
+
