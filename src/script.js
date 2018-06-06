@@ -1,16 +1,14 @@
-let fgCanvas = document.getElementById("fg");//getting canvas
-let fgSurface = fgCanvas.getContext("2d");//setting canvas for drawing
-fgSurface.imageSmoothingEnabled = false;
+var offScreenCanvas = document.createElement('canvas');
+offScreenCanvas.width = '3000';
+offScreenCanvas.height = '3000';
+var offScreenSurface = offScreenCanvas.getContext("2d");
+offScreenSurface.imageSmoothingEnabled = false;
 
-let bgCanvas = document.getElementById("bg");//getting canvas
-let bgSurface = bgCanvas.getContext("2d");//setting canvas for drawing
-bgSurface.imageSmoothingEnabled = false;
 
-let uiCanvas = document.getElementById("ui");//getting canvas
-let uiSurface = uiCanvas.getContext("2d");//setting canvas for drawing
-uiSurface.imageSmoothingEnabled = false;
+let onScreenCanvas = document.getElementById("bg");//getting canvas
+let onScreenSurface = onScreenCanvas.getContext("2d");//setting canvas for drawing
+onScreenSurface.imageSmoothingEnabled = false;
 
-uiSurface.fillStyle = 'black';//text colour for text used on canvas ui, to be removed and replaced
 
 let characterImage = new Image();//loading a spite sheet i downloaded
 characterImage.src = "data/baseSprite.png";
@@ -23,11 +21,36 @@ let keysPressed = [];//an array that holds the keys currently down
 document.addEventListener("keydown",keyDownHandler,false);
 document.addEventListener("keyup",keyUpHandler,false);
 
+let camera = createCamera();
+
 let character = createCharacter();//creates and holds character
 let tileList = [];//list of tiles and their locations and atributes
 setTileList();//populates the list with hardcoded tile information
 
-let currentRoom = generateRoomMap();
+//Max size 12*12 scrolling not yet implemented
+//please do not create maps that the player can escape
+let mapArray = [
+    [1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,7,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,0,1,1,1,0,1,0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,0,1,1,1,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,0,1,1,0,0,0,1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,6,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1,1,1,1,1,1,1,1,0,1],
+    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,9,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0]
+];
+
+/*Empty: 0, deafult: 1, wood: 2, Stone 3, Metal 4, Destroyable Wall: 5,
+Item: 6, Entrance: 7, Exit: 8, 9 instant death
+*/
+
+let currentRoom = generateRoomMap(mapArray);
 
 let drawHitboxes = false;
 
@@ -58,39 +81,32 @@ function gameLoop()
 
 function render() //clears screen and draws all elements in turn
 {
-    drawMain();
     drawUI();
-    if(drawHitboxes)
-        showHitboxes();
+    drawMain();
 }
 
 function drawBackground()// draws background layer should only be called during screen transitions
 {
 
-    bgSurface.clearRect(0,0,600,600);
-    for(let i =0;i<currentRoom.features.length;i++)
+    offScreenSurface.clearRect(0,0,3000,3000);
+    for(let i =0; i<currentRoom.static.length; i++)
     {
-        bgSurface.drawImage(tilesImage,tileList[currentRoom.features[i].tileNum].x,tileList[currentRoom.features[i].tileNum].y,
-            tileList[currentRoom.features[i].tileNum].w,tileList[currentRoom.features[i].tileNum].h,
-            currentRoom.features[i].x,currentRoom.features[i].y,
-            tileList[currentRoom.features[i].tileNum].w,tileList[currentRoom.features[i].tileNum].h);
+        offScreenSurface.drawImage(tilesImage,tileList[currentRoom.static[i].tileNum].x,tileList[currentRoom.static[i].tileNum].y,
+            tileList[currentRoom.static[i].tileNum].w,tileList[currentRoom.static[i].tileNum].h,
+            currentRoom.static[i].x,currentRoom.static[i].y,
+            tileList[currentRoom.static[i].tileNum].w,tileList[currentRoom.static[i].tileNum].h);
     }
 }
 
 function drawMain() //draws all enemies player and interactive objects
 {
-    fgSurface.clearRect(0,0,600,600);
     character.draw();
 }
 
 function drawUI() // draws UI ontop of everything else currently showing debug info
 {
-
-    uiSurface.clearRect(0,0,600,100);
-    uiSurface.font = "10px Courier New";
-    uiSurface.fillText(keysPressed.toString(),10,10);
-    uiSurface.fillText(character.jumpCharges,30,10);
-    uiSurface.fillText(character.moveVector.toString(),200,30);
+	onScreenSurface.clearRect(0,0,600,600);
+	onScreenSurface.drawImage(offScreenCanvas,camera.coordinates[0],camera.coordinates[1],600,600,0,0,600,600);
 }
 
 function userInputHandler() //accepts and applies player input
@@ -101,7 +117,7 @@ function userInputHandler() //accepts and applies player input
         character.moveVector[0]+=1;
     if(keysPressed.includes(38))//up
         character.jump();
-    if(keysPressed.includes(32))//space
+    if(keysPressed.includes(16))//shift
         character.dash();
 
 }
@@ -109,39 +125,40 @@ function userInputHandler() //accepts and applies player input
 function gameLogic() //updates all game functions and ai
 {
     character.tick(); //ticks character
+	camera.tick();
 }
 
-function generateRoomMap () //called by floor map generator to generate each room
+function generateRoomMap (current) //called by floor map generator to generate each room
 {
     let obj = [];
-    obj.features = [];
+    obj.static = [];
     obj.enemies = [];
-    for(let i =0;i<9;i++)
-        obj.features.push(returnTile(i*50,400,0));
 
-
-    for(let i =0;i<12;i++)
-        obj.features.push(returnTile(i*50,100,0));
-
-
-    obj.features.push(returnTile(200,300,0));
-    obj.features.push(returnTile(200,350,0));
-    obj.features.push(returnTile(100,300,0));
-    obj.features.push(returnTile(300,270,0));
-    obj.features.push(returnTile(450,230,0));
-    obj.features.push(returnTile(0,350,0));
-
-    obj.features.push(returnTile(400,500,0));
-    obj.features.push(returnTile(400,450,0));
-    obj.features.push(returnTile(400,550,0));
-
-    obj.features.push(returnTile(500,500,0));
-    obj.features.push(returnTile(500,450,0));
-    obj.features.push(returnTile(500,550,0));
-    obj.features.push(returnTile(550,450,0));
-
-
-    obj.features.push(returnTile(450,550,1));
+    for (let i =0;i<current.length;i++)
+        for(let q = 0; q<current[0].length;q++)
+        {
+            if(current[i][q] == 1)
+                obj.static.push(returnTile(q*50,i*50,0));
+            else if (current[i][q] == 2)
+                obj.static.push(returnTile(q*50,i*50,1));
+            else if (current[i][q] == 3)
+                obj.static.push(returnTile(q*50,i*50,2));
+            else if (current[i][q] == 4)
+                obj.static.push(returnTile(q*50,i*50,3));
+            else if (current[i][q] == 5)
+                obj.static.push(returnTile(q*50,i*50,4));
+            else if (current[i][q] == 6)
+                obj.static.push(returnTile(q*50,i*50,5));
+            else if (current[i][q] == 8)
+                obj.static.push(returnTile(q*50,i*50,7));
+            else if (current[i][q] == 7)
+            {
+                obj.static.push(returnTile(q*50,i*50,6));
+                character.coordinates = [q * 50, i * 50];
+			camera.coordinates[0] = character.coordinates[0]-275;
+			camera.coordinates[1] = character.coordinates[1]-275;
+            }
+        }
 
 
     return obj;
@@ -160,54 +177,63 @@ function createCharacter() //generates and contains game character
 {
     let obj = {};
     obj.coordinates = [100,150]; //player characters coordinates stored as x,y pair and player movement vector
-    obj.moveVector = [0,0];//what directions the player is traveling only uses 1 0 and -1
+    obj.moveVector = [0,0]; // character movement vector
     obj.sprite = [10,5,30,40];
-    obj.attackChargeTimer = 0; //keeps track of reload time for weapon
-    obj.maxSpeed= 5; //movement speed
     obj.jumpCharges = 0;
     obj.maxJumpCharges = 2;
     obj.jumpTimer = 0;
     obj.dashCd = 0;
-    obj.attack = function()
-    {
-
-    };
+    obj.dashTime = 0;
     obj.jump = function()
     {
         if(this.jumpCharges >0 && this.jumpTimer <= 0)
         {
-            if(this.jumpCharges/this.maxJumpCharges === 1)
-                this.moveVector[1] = -4;
-            else
-                this.moveVector[1] = -6*(this.jumpCharges/this.maxJumpCharges)
+            this.moveVector[1] = -4;
             this.jumpCharges--;
-	    this.jumpTimer = 20;
+	        this.jumpTimer = 20;
         }
-
     };
     obj.dash = function()
     {
         if(this.dashCd <= 0)
         {
-            character.moveVector[0] *= 15;
             this.dashCd = 60;
+            this.dashTime = 10;
         }
 
     };
     obj.tick = function ()
-    {;
+    {
+        if(this.dashTime >= 0)
+        {
+            this.dashTime--;
+            this.moveVector[0] *= this.dashTime*2;
+            this.moveVector[1] = 0;
+        }
         this.coordinates[0] += this.moveVector[0];
         this.coordinates[1] += this.moveVector[1];
-        this.moveVector[0] = Math.trunc(0.5*this.moveVector[0]); //friction
-        this.moveVector[1] += 0.1; //gravity
-        collisionSystem();
+        this.moveVector[0] = 0; //friction
+	if(this.moveVector[1]<5)
+        	this.moveVector[1] += 0.1; //gravity
         if(this.dashCd >= 0)
             this.dashCd--;
-        this.jumpTimer--;
+        if(this.jumpTimer >= 0)
+            this.jumpTimer--;
+        for (let i= 0; i<currentRoom.static.length; i++)
+        {
+            if(tileList[currentRoom.static[i].tileNum].passable !== 0)
+                if(roughCollision(this.coordinates[0],this.coordinates[1],this.sprite[2],this.sprite[3],currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w, tileList[currentRoom.static[i].tileNum].h))
+                {
+                    if (tileList[currentRoom.static[i].tileNum].passable === 1)
+                        fineCollision(this.coordinates[0],this.coordinates[1],this.sprite[2],this.sprite[3],currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w, tileList[currentRoom.static[i].tileNum].h);
+                    if (tileList[currentRoom.static[i].tileNum].passable === 3)
+                        resetLevel();
+                }
+        }
     };
     obj.draw = function()
     {
-        fgSurface.drawImage(characterImage, this.sprite[0], this.sprite[1], this.sprite[2], this.sprite[3],Math.floor(this.coordinates[0]), Math.floor(this.coordinates[1]), this.sprite[2], this.sprite[3]);
+        onScreenSurface.drawImage(characterImage, this.sprite[0], this.sprite[1], this.sprite[2], this.sprite[3],Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]), this.sprite[2], this.sprite[3]);
     };
     return (obj);
 }
@@ -225,36 +251,22 @@ function tileInfo(x,y,w,h,passable)
 
 function setTileList()
 {
-    tileList.push(tileInfo(0,0,50,50,1)); //tile 0 basic block with collision
-    tileList.push(tileInfo(50,0,50,50,2)); //tile 0 basic block with collision
-
+    tileList.push(tileInfo(50,0,50,50,1)); //default 0
+    tileList.push(tileInfo(100,0,50,50,1)); //wood 1
+    tileList.push(tileInfo(150,0,50,50,1)); //stone 2
+    tileList.push(tileInfo(0,0,50,50,1)); //metal 3
+    tileList.push(tileInfo(250,0,50,50,1)); //destroyable 4
+    tileList.push(tileInfo(300,0,50,50,1)); //item 5
+    tileList.push(tileInfo(450,0,50,50,2)); //entrance door 6
+    tileList.push(tileInfo(500,0,50,50,3)); //exit door 7
 }
 
-function collisionSystem()
-{
-    for (let i= 0;i<currentRoom.features.length;i++)
-    {
-        gameOver = true;
-        if(tileList[currentRoom.features[i].tileNum].passable !== 0)
-           if(roughCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],currentRoom.features[i].x, currentRoom.features[i].y,tileList[currentRoom.features[i].tileNum].w, tileList[currentRoom.features[i].tileNum].h))
-           {
-               if (tileList[currentRoom.features[i].tileNum].passable === 1)
-               {
-                   fineCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],currentRoom.features[i].x, currentRoom.features[i].y,tileList[currentRoom.features[i].tileNum].w, tileList[currentRoom.features[i].tileNum].h);
-               }
-	       if (tileList[currentRoom.features[i].tileNum].passable === 2)
-               {
-		   character.moveVector[1] = -8;
-		   character.maxJumpCharges = 2;
-               }
-           }
-    }
-}
 
 function roughCollision(x1,y1,w1,h1,x2,y2,w2,h2) //takes the x,y,width and height of 2 objects and checks for collision returns true or false
 {
     return (x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && h1 + y1 > y2);
 }
+
 
 function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to determine what vector to apply to character to move out of walls
 {
@@ -288,23 +300,26 @@ function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to
     }
 }
 
-
-function showHitboxes()  //dev tool to be removed in final
+function resetLevel()
 {
-    fgSurface.beginPath();
-    fgSurface.strokeStyle="red";
-    fgSurface.rect(character.coordinates[0], character.coordinates[1], character.sprite[2], character.sprite[3]);
-    fgSurface.stroke();
-    fgSurface.closePath();
-    for (let i= 0;i<currentRoom.features.length;i++) {
-        fgSurface.beginPath();
-        if (tileList[currentRoom.features[i].tileNum].passable === 1)
-            fgSurface.strokeStyle = "green";
- 	if (tileList[currentRoom.features[i].tileNum].passable === 2)
-            fgSurface.strokeStyle = "pink";
+    currentRoom = generateRoomMap(mapArray);
+}
 
-        fgSurface.rect(currentRoom.features[i].x, currentRoom.features[i].y, tileList[currentRoom.features[i].tileNum].w, tileList[currentRoom.features[i].tileNum].h);
-        fgSurface.stroke();
-        fgSurface.closePath();
-    }
+function createCamera()
+{
+	let obj = {};
+	obj.coordinates = [0,0];
+	obj.tick = function ()
+	{
+		if(character.coordinates[0]-this.coordinates[0] < 350)
+			this.coordinates[0] -= 2
+		if(character.coordinates[0]-this.coordinates[0] > 250)
+			this.coordinates[0] += 2		
+		if(character.coordinates[1]-this.coordinates[1] < 350)
+			this.coordinates[1] -= 2
+		if(character.coordinates[1]-this.coordinates[1] > 250)
+			this.coordinates[1] += 2
+	}
+	return obj;
+
 }
