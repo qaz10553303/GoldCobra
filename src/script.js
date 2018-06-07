@@ -30,24 +30,22 @@ setTileList();//populates the list with hardcoded tile information
 //Max size 12*12 scrolling not yet implemented
 //please do not create maps that the player can escape
 let mapArray = [
-    [1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,7,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,0,1,1,1,0,1,0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,0,1,1,1,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,0,1,1,0,0,0,1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,6,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1,1,1,1,1,1,1,1,0,1],
-    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,9,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0]
+    [1,1,1,1,1,1,1,1 ,1,1,1,1,1,1,1,1,4,4,4,4,1,1,1],
+    [1,0,0,0,0,0,0,0 ,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,4,4,4 ,4,4,0,0,0,0,0,0,0,0,0,0,0,7,1],
+    [1,6,0,0,0,1,4,1 ,4,1,0,1,0,1,0,1,0,0,0,0,1,1,1],
+    [1,1,1,1,0,1,1,1 ,4,1,0,1,1,1,1,1,0,0,0,0,1,1,1],
+    [1,1,1,1,0,1,1,1 ,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1],
+    [1,1,1,1,0,1,1,0 ,0,0,1,1,1,1,0,1,0,0,0,0,1,1,1],
+    [1,9,0,0,0,0,0,0 ,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,1,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1 ,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
 /*Empty: 0, deafult: 1, wood: 2, Stone 3, Metal 4, Destroyable Wall: 5,
-Item: 6, Entrance: 7, Exit: 8, 9 instant death
+Entrance: 6, Exit: 7, 8 instant death,9 double jump,10 dash
 */
 
 let currentRoom = generateRoomMap(mapArray);
@@ -135,7 +133,7 @@ function generateRoomMap (current) //called by floor map generator to generate e
     obj.enemies = [];
 
     for (let i =0;i<current.length;i++)
-        for(let q = 0; q<current[0].length;q++)
+        for(let q = 0; q<current[i].length;q++)
         {
             if(current[i][q] == 1)
                 obj.static.push(returnTile(q*50,i*50,0));
@@ -148,16 +146,20 @@ function generateRoomMap (current) //called by floor map generator to generate e
             else if (current[i][q] == 5)
                 obj.static.push(returnTile(q*50,i*50,4));
             else if (current[i][q] == 6)
+            {
                 obj.static.push(returnTile(q*50,i*50,5));
+                character.coordinates = [q * 50, i * 50];
+		camera.coordinates[0] = character.coordinates[0]-275;
+		camera.coordinates[1] = character.coordinates[1]-275;
+            }
+            else if (current[i][q] == 7)
+                obj.static.push(returnTile(q*50,i*50,6));
             else if (current[i][q] == 8)
                 obj.static.push(returnTile(q*50,i*50,7));
-            else if (current[i][q] == 7)
-            {
-                obj.static.push(returnTile(q*50,i*50,6));
-                character.coordinates = [q * 50, i * 50];
-			camera.coordinates[0] = character.coordinates[0]-275;
-			camera.coordinates[1] = character.coordinates[1]-275;
-            }
+            else if (current[i][q] == 9)
+                obj.static.push(returnTile(q*50,i*50,8));
+            else if (current[i][q] == 10)
+                obj.static.push(returnTile(q*50,i*50,9));
         }
 
 
@@ -180,7 +182,8 @@ function createCharacter() //generates and contains game character
     obj.moveVector = [0,0]; // character movement vector
     obj.sprite = [10,5,30,40];
     obj.jumpCharges = 0;
-    obj.maxJumpCharges = 2;
+    obj.maxJumpCharges = 1;
+    obj.dashPowerup = false;
     obj.jumpTimer = 0;
     obj.dashCd = 0;
     obj.dashTime = 0;
@@ -195,7 +198,7 @@ function createCharacter() //generates and contains game character
     };
     obj.dash = function()
     {
-        if(this.dashCd <= 0)
+        if(this.dashCd <= 0 && this.dashPowerup)
         {
             this.dashCd = 60;
             this.dashTime = 10;
@@ -226,8 +229,12 @@ function createCharacter() //generates and contains game character
                 {
                     if (tileList[currentRoom.static[i].tileNum].passable === 1)
                         fineCollision(this.coordinates[0],this.coordinates[1],this.sprite[2],this.sprite[3],currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w, tileList[currentRoom.static[i].tileNum].h);
-                    if (tileList[currentRoom.static[i].tileNum].passable === 3)
+                    if (tileList[currentRoom.static[i].tileNum].passable === 3 || tileList[currentRoom.static[i].tileNum].passable === 2)
                         resetLevel();
+                    if (tileList[currentRoom.static[i].tileNum].passable === 4)
+                        this.maxJumpCharges =2;
+                    if (tileList[currentRoom.static[i].tileNum].passable === 5)
+                        this.dashPowerup = true;
                 }
         }
     };
@@ -256,9 +263,11 @@ function setTileList()
     tileList.push(tileInfo(150,0,50,50,1)); //stone 2
     tileList.push(tileInfo(0,0,50,50,1)); //metal 3
     tileList.push(tileInfo(250,0,50,50,1)); //destroyable 4
-    tileList.push(tileInfo(300,0,50,50,1)); //item 5
-    tileList.push(tileInfo(450,0,50,50,2)); //entrance door 6
-    tileList.push(tileInfo(500,0,50,50,3)); //exit door 7
+    tileList.push(tileInfo(450,0,50,50,0)); //entrance door 5
+    tileList.push(tileInfo(500,0,50,50,2)); //exit door 6
+    tileList.push(tileInfo(-50,-50,50,50,3)); //instant death reset level 7
+    tileList.push(tileInfo(300,0,50,50,4)); //double Jump 8
+    tileList.push(tileInfo(300,0,50,50,5)); //dash 9
 }
 
 
@@ -302,6 +311,10 @@ function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to
 
 function resetLevel()
 {
+    character.moveVector[0] = 0;
+    character.moveVector[1] = 0;
+    character.maxJumpCharges =1;
+    character.dashPowerup = false;
     currentRoom = generateRoomMap(mapArray);
 }
 
@@ -311,14 +324,14 @@ function createCamera()
 	obj.coordinates = [0,0];
 	obj.tick = function ()
 	{
-		if(character.coordinates[0]-this.coordinates[0] < 350)
-			this.coordinates[0] -= 2
-		if(character.coordinates[0]-this.coordinates[0] > 250)
-			this.coordinates[0] += 2		
-		if(character.coordinates[1]-this.coordinates[1] < 350)
-			this.coordinates[1] -= 2
-		if(character.coordinates[1]-this.coordinates[1] > 250)
-			this.coordinates[1] += 2
+		if(character.coordinates[0]-this.coordinates[0] > 300)
+			this.coordinates[0] += Math.ceil((character.coordinates[0]-this.coordinates[0]-300)/100);
+		if(character.coordinates[0]-this.coordinates[0] < 200)
+			this.coordinates[0] += Math.ceil((character.coordinates[0]-this.coordinates[0]-200)/100);		
+		if(character.coordinates[1]-this.coordinates[1] > 300)
+			this.coordinates[1] += Math.ceil((character.coordinates[1]-this.coordinates[1]-300)/100);
+		if(character.coordinates[1]-this.coordinates[1] < 200)
+			this.coordinates[1] += Math.ceil((character.coordinates[1]-this.coordinates[1]-200)/100);
 	}
 	return obj;
 

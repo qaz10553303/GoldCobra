@@ -6,7 +6,7 @@
     font-size: 15px;
     font-weight: bold;
 }
-#mainStage
+#main
 {
     height: 600px;
     width: 600px;
@@ -21,7 +21,7 @@ h1
     color: cadetblue;
 }
 
-#darkness
+#bg
 {
     position: absolute;
     background-color: transparent;
