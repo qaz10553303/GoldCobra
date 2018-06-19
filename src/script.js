@@ -16,6 +16,9 @@ characterImage.src = "data/baseSprite.png";
 let tilesImage = new Image();//loading a spite sheet i downloaded
 tilesImage.src = "data/mapSpriteSheet.png";
 
+let augmentsImage = new Image();//loading a sprite sheet for the state machine
+augmentsImage.src = "data/augmentsSpriteSheet.png";
+
 let keysPressed = [];//an array that holds the keys currently down
 
 document.addEventListener("keydown",keyDownHandler,false);
@@ -47,10 +50,9 @@ let mapArray = [
 /*Empty: 0, deafult: 1, wood: 2, Stone 3, Metal 4, Destroyable Wall: 5,
 Entrance: 6, Exit: 7, 8 instant death,9 double jump,10 dash
 */
+let state = 0;
 
 let currentRoom = generateRoomMap(mapArray);
-
-let drawHitboxes = false;
 
 function keyDownHandler(e) //appends key to array if it is not already present
 {
@@ -65,16 +67,42 @@ function keyUpHandler(e) //removes specified key from array
 
 window.onload = function() //this prevents game from starting before all assets are loaded
 {
-    drawBackground();
-    requestAnimationFrame(gameLoop); //calls game loop 60 times a second
+  mainMenu();
 };
+
+function mainMenu()
+{
+	state = 0;
+	onScreenSurface.clearRect(0,0,600,600);
+    onScreenSurface.fillStyle = 'black';
+    onScreenSurface.fillRect(0,0,600,600);
+	onScreenSurface.fillStyle = 'white';
+	onScreenSurface.font = "30px Courier New";
+	onScreenSurface.fillText("Press Enter To Start", 110, 260);
+	if(keysPressed.includes(13))
+	{
+		state = 1;
+	}
+	if(state == 1)
+	{
+		drawBackground();
+		requestAnimationFrame(gameLoop);
+	}
+	else
+	{
+		requestAnimationFrame(mainMenu);
+	}
+	
+}
+
 
 function gameLoop()
 {
     render();
     userInputHandler();
     gameLogic();
-    requestAnimationFrame(gameLoop);
+	if(state == 1)
+		requestAnimationFrame(gameLoop);
 }
 
 function render() //clears screen and draws all elements in turn
@@ -160,6 +188,8 @@ function generateRoomMap (current) //called by floor map generator to generate e
                 obj.static.push(returnTile(q*50,i*50,8));
             else if (current[i][q] == 10)
                 obj.static.push(returnTile(q*50,i*50,9));
+            //else if (current[i][q] == 11)//STATE MACHINE TEMP
+                // obj.static.push(returnTile(q*50,i*50,10));
         }
 
 
@@ -180,13 +210,39 @@ function createCharacter() //generates and contains game character
     let obj = {};
     obj.coordinates = [100,150]; //player characters coordinates stored as x,y pair and player movement vector
     obj.moveVector = [0,0]; // character movement vector
-    obj.sprite = [10,5,30,40];
+    obj.sprite = [9,2,25,40];
     obj.jumpCharges = 0;
     obj.maxJumpCharges = 1;
     obj.dashPowerup = false;
     obj.jumpTimer = 0;
     obj.dashCd = 0;
     obj.dashTime = 0;
+    //STATE MACHINE
+    //obj.helmet = 0;
+    //obj.body = 0;
+    //obj.arms = 0;
+    //obj.legs = 0;
+
+    /*obj.equipAugment = function (augType, augId)//type 1 helmet, 2 body, 3 arms, 4 legs
+    {
+        switch(augType)
+        {
+            case 1:
+            this.helmet = augId;
+            break;
+            case 2:
+            this.body = audId;
+            break;
+            case 3:
+            this.arms = augId;
+            break;
+            case 4:
+            this.legs = augId;
+            break;
+        }
+
+    }*/
+    //
     obj.jump = function()
     {
         if(this.jumpCharges >0 && this.jumpTimer <= 0)
@@ -224,23 +280,41 @@ function createCharacter() //generates and contains game character
             this.jumpTimer--;
         for (let i= 0; i<currentRoom.static.length; i++)
         {
-            if(tileList[currentRoom.static[i].tileNum].passable !== 0)
+            if(tileList[currentRoom.static[i].tileNum].passable != 0)
                 if(roughCollision(this.coordinates[0],this.coordinates[1],this.sprite[2],this.sprite[3],currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w, tileList[currentRoom.static[i].tileNum].h))
                 {
-                    if (tileList[currentRoom.static[i].tileNum].passable === 1)
+                    switch(tileList[currentRoom.static[i].tileNum].passable)
+                    {
+                    case 1:
                         fineCollision(this.coordinates[0],this.coordinates[1],this.sprite[2],this.sprite[3],currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w, tileList[currentRoom.static[i].tileNum].h);
-                    if (tileList[currentRoom.static[i].tileNum].passable === 3 || tileList[currentRoom.static[i].tileNum].passable === 2)
+                        break;
+                   case 2:
+                   case 3:
                         resetLevel();
-                    if (tileList[currentRoom.static[i].tileNum].passable === 4)
+                        break;
+                   case 4:
                         this.maxJumpCharges =2;
-                    if (tileList[currentRoom.static[i].tileNum].passable === 5)
+                        break;
+                   case 5:
                         this.dashPowerup = true;
+                        break;
+                   //case 11://STATE MACHINE TEMP
+                    //    this.equipAugment(1, 1);
+                        break;
+                    }
+
                 }
         }
     };
     obj.draw = function()
     {
+
         onScreenSurface.drawImage(characterImage, this.sprite[0], this.sprite[1], this.sprite[2], this.sprite[3],Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]), this.sprite[2], this.sprite[3]);
+
+        if (this.helmet != 0)
+            onScreenSurface.drawImage(augmentsImage, this.sprite[0]+(this.sprite[2]*(this.helmet-1)), this.sprite[1], this.sprite[2]*this.helmet, this.sprite[3],Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]), this.sprite[2]*(this.helmet), this.sprite[3]);
+        if (this.body != 0)
+            onScreenSurface.drawImage(augmentsImage, this.sprite[0]+(this.sprite[2]*(this.body-1)), this.sprite[1], this.sprite[2]*this.body, this.sprite[3],Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]), this.sprite[2]*(this.body), this.sprite[3]);
     };
     return (obj);
 }
@@ -268,6 +342,7 @@ function setTileList()
     tileList.push(tileInfo(-50,-50,50,50,3)); //instant death reset level 7
     tileList.push(tileInfo(300,0,50,50,4)); //double Jump 8
     tileList.push(tileInfo(300,0,50,50,5)); //dash 9
+   // tileList.push(tileInfo(300,0,50,50,11));
 }
 
 
@@ -316,6 +391,8 @@ function resetLevel()
     character.maxJumpCharges =1;
     character.dashPowerup = false;
     currentRoom = generateRoomMap(mapArray);
+	state = 0;
+	mainMenu();
 }
 
 function createCamera()
