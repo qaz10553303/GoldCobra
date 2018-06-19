@@ -30,14 +30,16 @@ let character = createCharacter();//creates and holds character
 let tileList = [];//list of tiles and their locations and atributes
 setTileList();//populates the list with hardcoded tile information
 
+let currentLevel =0;
+
 //Max size 12*12 scrolling not yet implemented
 //please do not create maps that the player can escape
-let mapArray = [
+let mapArray =[ [
     [1,1,1,1,1,1,1,1 ,1,1,1,1,1,1,1,1,4,4,4,4,1,1,1],
     [1,0,0,0,0,0,0,0 ,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,4,4,4 ,4,4,0,0,0,0,0,0,0,0,0,0,0,7,1],
-    [1,6,0,0,0,1,4,1 ,4,1,0,1,0,1,0,1,0,0,0,0,1,1,1],
+    [1,0,0,0,0,4,4,4 ,4,4,0,0,0,0,0,0,0,0,0,0,6,7,1],
+    [1,0,0,0,0,1,4,1 ,4,1,0,1,0,1,0,1,0,0,0,0,1,1,1],
     [1,1,1,1,0,1,1,1 ,4,1,0,1,1,1,1,1,0,0,0,0,1,1,1],
     [1,1,1,1,0,1,1,1 ,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1],
     [1,1,1,1,0,1,1,0 ,0,0,1,1,1,1,0,1,0,0,0,0,1,1,1],
@@ -45,14 +47,37 @@ let mapArray = [
     [1,1,1,1,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,1,1 ,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-];
+]
+,[
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,6,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+]
+,[
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,6,1,1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+]];
+
 
 /*Empty: 0, deafult: 1, wood: 2, Stone 3, Metal 4, Destroyable Wall: 5,
 Entrance: 6, Exit: 7, 8 instant death,9 double jump,10 dash
 */
 let state = 0;
 
-let currentRoom = generateRoomMap(mapArray);
+let currentRoom = generateRoomMap(mapArray[currentLevel]);
 
 function keyDownHandler(e) //appends key to array if it is not already present
 {
@@ -289,6 +314,9 @@ function createCharacter() //generates and contains game character
                         fineCollision(this.coordinates[0],this.coordinates[1],this.sprite[2],this.sprite[3],currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w, tileList[currentRoom.static[i].tileNum].h);
                         break;
                    case 2:
+			currentLevel++;
+                        nextLevel();
+                        break;
                    case 3:
                         resetLevel();
                         break;
@@ -390,9 +418,28 @@ function resetLevel()
     character.moveVector[1] = 0;
     character.maxJumpCharges =1;
     character.dashPowerup = false;
-    currentRoom = generateRoomMap(mapArray);
+    currentRoom = generateRoomMap(mapArray[currentLevel]);
 	state = 0;
 	mainMenu();
+}
+
+function nextLevel()
+{
+    character.moveVector[0] = 0;
+    character.moveVector[1] = 0;
+    character.maxJumpCharges =1;
+    character.dashPowerup = false;
+    if(currentLevel < mapArray.length)
+	{
+        currentRoom = generateRoomMap(mapArray[currentLevel]);
+	drawBackground();
+	}
+    else
+        {
+	    currentLevel = -1;
+	    state = 0;
+	    mainMenu();
+	}
 }
 
 function createCamera()
