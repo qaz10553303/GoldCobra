@@ -33,27 +33,26 @@ setTileList();//populates the list with hardcoded tile information
 //Max size 12*12 scrolling not yet implemented
 //please do not create maps that the player can escape
 let mapArray = [
-    [1,1,1,1,1,1,1,1 ,1,1,1,1,1,1,1,1,4,4,4,4,1,1,1],
-    [1,0,0,0,0,0,0,0 ,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,4,4,4 ,4,4,0,0,0,0,0,0,0,0,0,0,0,7,1],
+    [1,1,1,1, 1,1,1,1 ,1,1,1,1,1,1,1,1,4,4,4,4,1,1,1],
+    [1,0,0,0 ,0,0,0,0 ,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0 ,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0 ,0,4,4,4 ,4,4,0,0,0,0,0,0,0,0,0,0,0,7,1],
     [1,6,0,11,0,1,4,1 ,4,1,0,1,0,1,0,1,0,0,0,0,1,1,1],
-    [1,1,1,1,0,1,1,1 ,4,1,0,1,1,1,1,1,0,0,0,0,1,1,1],
-    [1,1,1,1,0,1,1,1 ,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1],
-    [1,1,1,1,0,1,1,0 ,0,0,1,1,1,1,0,1,0,0,0,0,1,1,1],
-    [1,9,0,0,0,0,0,0 ,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,1,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1 ,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    [1,1,1,1 ,0,1,1,1 ,4,1,0,1,1,1,1,1,0,0,0,0,1,1,1],
+    [1,1,1,1 ,0,1,1,1 ,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1],
+    [1,1,1,1 ,0,1,1,0 ,0,0,1,1,1,1,0,1,0,0,0,0,1,1,1],
+    [1,9,0,0 ,0,0,0,0 ,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,1 ,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1 ,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1 ,1,1,1,1 ,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
 /*Empty: 0, deafult: 1, wood: 2, Stone 3, Metal 4, Destroyable Wall: 5,
 Entrance: 6, Exit: 7, 8 instant death,9 double jump,10 dash
 */
+let state = 0;
 
 let currentRoom = generateRoomMap(mapArray);
-
-let drawHitboxes = false;
 
 function keyDownHandler(e) //appends key to array if it is not already present
 {
@@ -68,16 +67,42 @@ function keyUpHandler(e) //removes specified key from array
 
 window.onload = function() //this prevents game from starting before all assets are loaded
 {
-    drawBackground();
-    requestAnimationFrame(gameLoop); //calls game loop 60 times a second
+  mainMenu();
 };
+
+function mainMenu()
+{
+	state = 0;
+	onScreenSurface.clearRect(0,0,600,600);
+    onScreenSurface.fillStyle = 'black';
+    onScreenSurface.fillRect(0,0,600,600);
+	onScreenSurface.fillStyle = 'white';
+	onScreenSurface.font = "30px Courier New";
+	onScreenSurface.fillText("Press Enter To Start", 110, 260);
+	if(keysPressed.includes(13))
+	{
+		state = 1;
+	}
+	if(state == 1)
+	{
+		drawBackground();
+		requestAnimationFrame(gameLoop);
+	}
+	else
+	{
+		requestAnimationFrame(mainMenu);
+	}
+	
+}
+
 
 function gameLoop()
 {
     render();
     userInputHandler();
     gameLogic();
-    requestAnimationFrame(gameLoop);
+	if(state == 1)
+		requestAnimationFrame(gameLoop);
 }
 
 function render() //clears screen and draws all elements in turn
@@ -185,7 +210,7 @@ function createCharacter() //generates and contains game character
     let obj = {};
     obj.coordinates = [100,150]; //player characters coordinates stored as x,y pair and player movement vector
     obj.moveVector = [0,0]; // character movement vector
-    obj.sprite = [0,0,42,42];
+    obj.sprite = [9,2,25,40];
     obj.jumpCharges = 0;
     obj.maxJumpCharges = 1;
     obj.dashPowerup = false;
@@ -366,6 +391,8 @@ function resetLevel()
     character.maxJumpCharges =1;
     character.dashPowerup = false;
     currentRoom = generateRoomMap(mapArray);
+	state = 0;
+	mainMenu();
 }
 
 function createCamera()
