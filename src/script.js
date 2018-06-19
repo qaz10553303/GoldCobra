@@ -33,18 +33,18 @@ setTileList();//populates the list with hardcoded tile information
 //Max size 12*12 scrolling not yet implemented
 //please do not create maps that the player can escape
 let mapArray = [
-    [1,1,1,1, 1,1,1,1 ,1,1,1,1,1,1,1,1,4,4,4,4,1,1,1],
-    [1,0,0,0 ,0,0,0,0 ,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0 ,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0 ,0,4,4,4 ,4,4,0,0,0,0,0,0,0,0,0,0,0,7,1],
-    [1,6,0,11,0,1,4,1 ,4,1,0,1,0,1,0,1,0,0,0,0,1,1,1],
-    [1,1,1,1 ,0,1,1,1 ,4,1,0,1,1,1,1,1,0,0,0,0,1,1,1],
-    [1,1,1,1 ,0,1,1,1 ,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1],
-    [1,1,1,1 ,0,1,1,0 ,0,0,1,1,1,1,0,1,0,0,0,0,1,1,1],
-    [1,9,0,0 ,0,0,0,0 ,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,1 ,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1 ,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1 ,1,1,1,1 ,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    [1,1,1,1,1,1,1,1 ,1,1,1,1,1,1,1,1,4,4,4,4,1,1,1],
+    [1,0,0,0,0,0,0,0 ,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,4,4,4 ,4,4,0,0,0,0,0,0,0,0,0,0,0,7,1],
+    [1,6,0,0,0,1,4,1 ,4,1,0,1,0,1,0,1,0,0,0,0,1,1,1],
+    [1,1,1,1,0,1,1,1 ,4,1,0,1,1,1,1,1,0,0,0,0,1,1,1],
+    [1,1,1,1,0,1,1,1 ,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1],
+    [1,1,1,1,0,1,1,0 ,0,0,1,1,1,1,0,1,0,0,0,0,1,1,1],
+    [1,9,0,0,0,0,0,0 ,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,1,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1 ,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
 /*Empty: 0, deafult: 1, wood: 2, Stone 3, Metal 4, Destroyable Wall: 5,
@@ -188,8 +188,8 @@ function generateRoomMap (current) //called by floor map generator to generate e
                 obj.static.push(returnTile(q*50,i*50,8));
             else if (current[i][q] == 10)
                 obj.static.push(returnTile(q*50,i*50,9));
-            else if (current[i][q] == 11)//STATE MACHINE TEMP
-                 obj.static.push(returnTile(q*50,i*50,10));
+            //else if (current[i][q] == 11)//STATE MACHINE TEMP
+                // obj.static.push(returnTile(q*50,i*50,10));
         }
 
 
@@ -218,12 +218,12 @@ function createCharacter() //generates and contains game character
     obj.dashCd = 0;
     obj.dashTime = 0;
     //STATE MACHINE
-    obj.helmet = 0;
-    obj.body = 0;
-    obj.arms = 0;
-    obj.legs = 0;
+    //obj.helmet = 0;
+    //obj.body = 0;
+    //obj.arms = 0;
+    //obj.legs = 0;
 
-    obj.equipAugment = function (augType, augId)//type 1 helmet, 2 body, 3 arms, 4 legs
+    /*obj.equipAugment = function (augType, augId)//type 1 helmet, 2 body, 3 arms, 4 legs
     {
         switch(augType)
         {
@@ -241,7 +241,7 @@ function createCharacter() //generates and contains game character
             break;
         }
 
-    }
+    }*/
     //
     obj.jump = function()
     {
@@ -298,8 +298,8 @@ function createCharacter() //generates and contains game character
                    case 5:
                         this.dashPowerup = true;
                         break;
-                   case 11://STATE MACHINE TEMP
-                        this.equipAugment(1, 1);
+                   //case 11://STATE MACHINE TEMP
+                    //    this.equipAugment(1, 1);
                         break;
                     }
 
@@ -342,7 +342,7 @@ function setTileList()
     tileList.push(tileInfo(-50,-50,50,50,3)); //instant death reset level 7
     tileList.push(tileInfo(300,0,50,50,4)); //double Jump 8
     tileList.push(tileInfo(300,0,50,50,5)); //dash 9
-    tileList.push(tileInfo(300,0,50,50,11));
+   // tileList.push(tileInfo(300,0,50,50,11));
 }
 
 
