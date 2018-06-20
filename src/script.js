@@ -16,6 +16,9 @@ characterImage.src = "data/baseSprite.png";
 let tilesImage = new Image();//loading a spite sheet i downloaded
 tilesImage.src = "data/mapSpriteSheet.png";
 
+enemyImage = new Image();
+enemyImage.src = "data/Evil.png";
+
 let augmentsImage = new Image();//loading a sprite sheet for the state machine
 augmentsImage.src = "data/augmentsSpriteSheet.png";
 
@@ -92,7 +95,7 @@ function mainMenu()
 	{
 		requestAnimationFrame(mainMenu);
 	}
-	
+
 }
 
 
@@ -127,6 +130,7 @@ function drawBackground()// draws background layer should only be called during 
 function drawMain() //draws all enemies player and interactive objects
 {
     character.draw();
+    ai1.drawAI();
 }
 
 function drawUI() // draws UI ontop of everything else currently showing debug info
@@ -152,6 +156,7 @@ function gameLogic() //updates all game functions and ai
 {
     character.tick(); //ticks character
 	camera.tick();
+  ai1.aiPatrol();
 }
 
 function generateRoomMap (current) //called by floor map generator to generate each room
@@ -204,6 +209,68 @@ function returnTile(x,y,tileNum)
     obj.tileNum = tileNum;
     return obj;
 }
+
+function drawAI(){
+
+onScreenSurface.drawImage(enemyImage,0,0, 20, 50,Math.floor(this.xCord-camera.coordinates[0]), Math.floor(this.yCord-camera.coordinates[1]), 20, 50);
+}
+
+function Ai(startpoint, endpoint, yCord, xCord, MovementSpeed, UsePointSystem, MovementState){
+      this.startpoint=startpoint;
+      this.endpoint=endpoint;
+      this.yCord=yCord;
+      this.xCord=xCord;
+      this.MovementSpeed=MovementSpeed;
+      this.UsePointSystem=UsePointSystem;
+      this.MovementState=MovementState;
+    }
+
+    // creates a new ai called ai1, starpoint and endpoint are ignored unless you set the UsePointSystem to 1
+var ai1 = new Ai(325, 500, 400, 325, 1, 0, 1);
+ai1.aiPatrol =aiPatrol;
+ai1.drawAI = drawAI;
+
+
+function aiPatrol(){console.log(this.xCord)
+if(this.UsePointSystem){
+  if (this.MovementState==1 && this.xCord < this.endpoint)
+    {
+        this.xCord +=this.MovementSpeed;
+    }
+    if (this.MovementState==1&& this.xCord >= this.endpoint)
+    {
+    this.MovementState=2
+    }
+    if (this.MovementState==2 && this.xCord > this.startpoint)
+    {
+      this.xCord -=this.MovementSpeed;
+    }
+    if (this.MovementState==2&& this.xCord<=this.startpoint)
+    {
+      this.MovementState=1
+    }
+}
+else{
+if(this.MovementState==1){
+this.xCord++;}
+else{
+this.xCord--;
+}
+    for (let i= 0; i<currentRoom.static.length; i++){
+
+          if(roughCollision(this.xCord,this.yCord,20,50,currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w, tileList[currentRoom.static[i].tileNum].h))
+            {if(this.MovementState==1){
+              this.MovementState=2;
+            }
+            else if(this.MovementState==2){
+              this.MovementState=1;
+            }
+            else{console.log("error");}
+            break;
+          }}}
+
+}
+
 
 function createCharacter() //generates and contains game character
 {
@@ -404,7 +471,7 @@ function createCamera()
 		if(character.coordinates[0]-this.coordinates[0] > 300)
 			this.coordinates[0] += Math.ceil((character.coordinates[0]-this.coordinates[0]-300)/100);
 		if(character.coordinates[0]-this.coordinates[0] < 200)
-			this.coordinates[0] += Math.ceil((character.coordinates[0]-this.coordinates[0]-200)/100);		
+			this.coordinates[0] += Math.ceil((character.coordinates[0]-this.coordinates[0]-200)/100);
 		if(character.coordinates[1]-this.coordinates[1] > 300)
 			this.coordinates[1] += Math.ceil((character.coordinates[1]-this.coordinates[1]-300)/100);
 		if(character.coordinates[1]-this.coordinates[1] < 200)
