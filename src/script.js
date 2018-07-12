@@ -10,14 +10,16 @@ let onScreenSurface = onScreenCanvas.getContext("2d");//setting canvas for drawi
 onScreenSurface.imageSmoothingEnabled = false;
 
 
-let characterImage = new Image();//loading a spite sheet i downloaded
-characterImage.src = "data/baseSprite.png";
+let spriteImage = new Image();//everything else
+spriteImage.src = "data/spriteSheet.png";
 
-let tilesImage = new Image();//loading a spite sheet i downloaded
+let tilesImage = new Image();//background elements
 tilesImage.src = "data/mapSpriteSheet.png";
 
-let augmentsImage = new Image();//loading a sprite sheet for the state machine
-augmentsImage.src = "data/augmentsSpriteSheet.png";
+let spikeImage = new Image();//loading a spite sheet i downloaded
+spikeImage.src = "data/enemy.png";
+
+
 
 let keysPressed = [];//an array that holds the keys currently down
 
@@ -35,18 +37,18 @@ let currentLevel =0;
 //Max size 12*12 scrolling not yet implemented
 //please do not create maps that the player can escape
 let mapArray =[ [
-    [1,1,1,1,1,1,1,1 ,1,1,1,1,1,1,1,1,4,4,4,4,1,1,1],
-    [1,0,0,0,0,0,0,0 ,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,4,4,4 ,4,4,0,0,0,0,0,0,0,0,0,0,6,7,1],
-    [1,0,0,0,0,1,4,1 ,4,1,0,1,0,1,0,1,0,0,0,0,1,1,1],
-    [1,1,1,1,0,1,1,1 ,4,1,0,1,1,1,1,1,0,0,0,0,1,1,1],
-    [1,1,1,1,0,1,1,1 ,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1],
-    [1,1,1,1,0,1,1,0 ,0,0,1,1,1,1,0,1,0,0,0,0,1,1,1],
-    [1,9,0,0,0,0,0,0 ,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,1,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1 ,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1 ,8,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    [1,1,1 ,1,1,1,1,1 ,1 ,1 ,1,1,1,1,1,1,1,1,1,1 ,1,1,1],
+    [1,0,0 ,0,0,5,0,0 ,0 ,5 ,0,5,0,0,5,0,0,0,0,13,0,0,1],
+    [1,0,0 ,0,0,5,0,10,0 ,5 ,0,5,0,0,5,0,0,0,0,0 ,0,0,1],
+    [1,0,0 ,0,0,4,4,4 ,4 ,4 ,0,5,0,0,5,0,0,0,0,0 ,0,7,1],
+    [1,6,0 ,0,0,0,0,0 ,0 ,0 ,0,4,4,4,4,0,0,0,0,0 ,0,1,1],
+    [1,1,1 ,1,0,0,0,0 ,0 ,0 ,0,0,0,0,0,0,0,0,0,0 ,1,1,1],
+    [1,0,0 ,0,0,0,0,0 ,0 ,0 ,1,0,0,0,0,0,0,0,0,0 ,1,1,1],
+    [1,0,0 ,0,0,0,0,0 ,0 ,1 ,1,1,0,0,0,0,0,0,0,0 ,1,1,1],
+    [1,9,15,0,0,0,0,11,14,1,1,1,0,0,0,0,0,0,11,12,1,1,1],
+    [1,1,1 ,1,1,1,1,1 ,0 ,1 ,1,1,1,1,1,1,1,1,1,1 ,1,1,1],
+    [1,1,1 ,1,1,1,1,1 ,0 ,1 ,1,1,1,1,1,1,1,1,1,1 ,1,1,1],
+    [1,1,1 ,1,1,1,1,1 ,8 ,1 ,1,1,1,1,1,1,1,1,1,1 ,1,1,1]
 ]
 ,[
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -72,8 +74,14 @@ let mapArray =[ [
 ]];
 
 
-/*Empty: 0, deafult: 1, wood: 2, Stone 3, Metal 4, Destroyable Wall: 5,
-Entrance: 6, Exit: 7, 8 instant death,9 double jump,10 dash
+/*Empty: 0, deafult: 1, wood: 2, Stone 3, Metal 4, Bg: wires 5,
+Entrance: 6, Exit: 7, 8 instant death,
+9 double jump powerup,10 dash powerup
+11 enemy moving left to start
+12 enemy turn up
+13 enemy turn down
+14 enemy turn left
+15 enemy turn right
 */
 let state = 0;
 
@@ -152,6 +160,8 @@ function drawBackground()// draws background layer should only be called during 
 function drawMain() //draws all enemies player and interactive objects
 {
     character.draw();
+    for(let i = 0; i < currentRoom.active.length;i++)
+        currentRoom.active[i].draw();
 }
 
 function drawUI() // draws UI ontop of everything else currently showing debug info
@@ -163,9 +173,15 @@ function drawUI() // draws UI ontop of everything else currently showing debug i
 function userInputHandler() //accepts and applies player input
 {
     if(keysPressed.includes(37))//left
-        character.moveVector[0]-=1;
+    {
+        character.moveVector[0] -= 1;
+        character.directionFacing = true;
+    }
     if(keysPressed.includes(39))//right
-        character.moveVector[0]+=1;
+    {
+        character.moveVector[0] += 1;
+        character.directionFacing = false;
+    }
     if(keysPressed.includes(38))//up
         character.jump();
     if(keysPressed.includes(16))//shift
@@ -175,6 +191,8 @@ function userInputHandler() //accepts and applies player input
 
 function gameLogic() //updates all game functions and ai
 {
+    for(let i = 0; i < currentRoom.active.length;i++)
+        currentRoom.active[i].tick();
     character.tick(); //ticks character
 	camera.tick();
 }
@@ -183,7 +201,7 @@ function generateRoomMap (current) //called by floor map generator to generate e
 {
     let obj = [];
     obj.static = [];
-    obj.enemies = [];
+    obj.active = [];
 
     for (let i =0;i<current.length;i++)
         for(let q = 0; q<current[i].length;q++)
@@ -202,19 +220,28 @@ function generateRoomMap (current) //called by floor map generator to generate e
             {
                 obj.static.push(returnTile(q*50,i*50,5));
                 character.coordinates = [q * 50, i * 50];
-		camera.coordinates[0] = character.coordinates[0]-275;
-		camera.coordinates[1] = character.coordinates[1]-275;
+		        camera.coordinates[0] = character.coordinates[0]-275;
+		        camera.coordinates[1] = character.coordinates[1]-275;
             }
             else if (current[i][q] == 7)
                 obj.static.push(returnTile(q*50,i*50,6));
             else if (current[i][q] == 8)
                 obj.static.push(returnTile(q*50,i*50,7));
             else if (current[i][q] == 9)
-                obj.static.push(returnTile(q*50,i*50,8));
+                obj.active.push(doubleJumpPowerUp(q*50,i*50));
             else if (current[i][q] == 10)
+                obj.active.push(dashPowerUp(q*50,i*50));
+            else if (current[i][q] == 11)
+                obj.active.push(enemy1(q*50,i*50,3));
+            else if (current[i][q] == 12)
+                obj.static.push(returnTile(q*50,i*50,8));
+            else if (current[i][q] == 13)
                 obj.static.push(returnTile(q*50,i*50,9));
-            //else if (current[i][q] == 11)//STATE MACHINE TEMP
-                // obj.static.push(returnTile(q*50,i*50,10));
+            else if (current[i][q] == 14)
+                obj.static.push(returnTile(q*50,i*50,10));
+            else if (current[i][q] == 15)
+                obj.static.push(returnTile(q*50,i*50,11));
+
         }
 
 
@@ -237,37 +264,13 @@ function createCharacter() //generates and contains game character
     obj.moveVector = [0,0]; // character movement vector
     obj.sprite = [9,2,25,40];
     obj.jumpCharges = 0;
-    obj.maxJumpCharges = 1;
-    obj.dashPowerup = false;
+    obj.maxJumpCharges = 2;
+    obj.dashPowerup = true;
     obj.jumpTimer = 0;
     obj.dashCd = 0;
     obj.dashTime = 0;
-    //STATE MACHINE
-    //obj.helmet = 0;
-    //obj.body = 0;
-    //obj.arms = 0;
-    //obj.legs = 0;
+    obj.directionFacing = false;
 
-    /*obj.equipAugment = function (augType, augId)//type 1 helmet, 2 body, 3 arms, 4 legs
-    {
-        switch(augType)
-        {
-            case 1:
-            this.helmet = augId;
-            break;
-            case 2:
-            this.body = audId;
-            break;
-            case 3:
-            this.arms = augId;
-            break;
-            case 4:
-            this.legs = augId;
-            break;
-        }
-
-    }*/
-    //
     obj.jump = function()
     {
         if(this.jumpCharges >0 && this.jumpTimer <= 0)
@@ -291,7 +294,10 @@ function createCharacter() //generates and contains game character
         if(this.dashTime >= 0)
         {
             this.dashTime--;
-            this.moveVector[0] *= this.dashTime*2;
+            if(this.directionFacing)
+                this.moveVector[0] -= this.dashTime*2;
+            else
+                this.moveVector[0] += this.dashTime*2;
             this.moveVector[1] = 0;
         }
         this.coordinates[0] += this.moveVector[0];
@@ -305,7 +311,7 @@ function createCharacter() //generates and contains game character
             this.jumpTimer--;
         for (let i= 0; i<currentRoom.static.length; i++)
         {
-            if(tileList[currentRoom.static[i].tileNum].passable != 0)
+            if(tileList[currentRoom.static[i].tileNum].passable > 0)
                 if(roughCollision(this.coordinates[0],this.coordinates[1],this.sprite[2],this.sprite[3],currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w, tileList[currentRoom.static[i].tileNum].h))
                 {
                     switch(tileList[currentRoom.static[i].tileNum].passable)
@@ -314,20 +320,11 @@ function createCharacter() //generates and contains game character
                         fineCollision(this.coordinates[0],this.coordinates[1],this.sprite[2],this.sprite[3],currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w, tileList[currentRoom.static[i].tileNum].h);
                         break;
                    case 2:
-			currentLevel++;
+			            currentLevel++;
                         nextLevel();
                         break;
                    case 3:
-                        resetLevel();
-                        break;
-                   case 4:
-                        this.maxJumpCharges =2;
-                        break;
-                   case 5:
-                        this.dashPowerup = true;
-                        break;
-                   //case 11://STATE MACHINE TEMP
-                    //    this.equipAugment(1, 1);
+                        resetGame();
                         break;
                     }
 
@@ -336,13 +333,11 @@ function createCharacter() //generates and contains game character
     };
     obj.draw = function()
     {
+        if(!this.directionFacing)
+            onScreenSurface.drawImage(spriteImage, 13, 7, 50, 50,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]), 50,50);
+        else
+            onScreenSurface.drawImage(spriteImage, 65, 7, 40, 50,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]), 40,50);
 
-        onScreenSurface.drawImage(characterImage, this.sprite[0], this.sprite[1], this.sprite[2], this.sprite[3],Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]), this.sprite[2], this.sprite[3]);
-
-        if (this.helmet != 0)
-            onScreenSurface.drawImage(augmentsImage, this.sprite[0]+(this.sprite[2]*(this.helmet-1)), this.sprite[1], this.sprite[2]*this.helmet, this.sprite[3],Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]), this.sprite[2]*(this.helmet), this.sprite[3]);
-        if (this.body != 0)
-            onScreenSurface.drawImage(augmentsImage, this.sprite[0]+(this.sprite[2]*(this.body-1)), this.sprite[1], this.sprite[2]*this.body, this.sprite[3],Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]), this.sprite[2]*(this.body), this.sprite[3]);
     };
     return (obj);
 }
@@ -360,17 +355,18 @@ function tileInfo(x,y,w,h,passable)
 
 function setTileList()
 {
-    tileList.push(tileInfo(50,0,50,50,1)); //default 0
+    tileList.push(tileInfo(50,0,50,50,1)); //default ground 0
     tileList.push(tileInfo(100,0,50,50,1)); //wood 1
     tileList.push(tileInfo(150,0,50,50,1)); //stone 2
     tileList.push(tileInfo(0,0,50,50,1)); //metal 3
-    tileList.push(tileInfo(250,0,50,50,1)); //destroyable 4
+    tileList.push(tileInfo(550,0,50,50,0)); //bg chains 4
     tileList.push(tileInfo(450,0,50,50,0)); //entrance door 5
     tileList.push(tileInfo(500,0,50,50,2)); //exit door 6
     tileList.push(tileInfo(-50,-50,50,50,3)); //instant death reset level 7
-    tileList.push(tileInfo(300,0,50,50,4)); //double Jump 8
-    tileList.push(tileInfo(300,0,50,50,5)); //dash 9
-   // tileList.push(tileInfo(300,0,50,50,11));
+    tileList.push(tileInfo(150,150,20,20,-1)); //enemy up 8
+    tileList.push(tileInfo(150,150,20,20,-2)); //enemy down 9
+    tileList.push(tileInfo(150,150,20,20,-3)); //enemy left 10
+    tileList.push(tileInfo(150,150,20,20,-4)); //enemy right 11
 }
 
 
@@ -412,12 +408,13 @@ function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to
     }
 }
 
-function resetLevel()
+function resetGame()
 {
     character.moveVector[0] = 0;
     character.moveVector[1] = 0;
     character.maxJumpCharges =1;
     character.dashPowerup = false;
+    currentLevel =0;
     currentRoom = generateRoomMap(mapArray[currentLevel]);
 	state = 0;
 	mainMenu();
@@ -432,14 +429,10 @@ function nextLevel()
     if(currentLevel < mapArray.length)
 	{
         currentRoom = generateRoomMap(mapArray[currentLevel]);
-	drawBackground();
+	    drawBackground();
 	}
     else
-        {
-	    currentLevel = -1;
-	    state = 0;
-	    mainMenu();
-	}
+        resetGame();
 }
 
 function createCamera()
@@ -456,7 +449,131 @@ function createCamera()
 			this.coordinates[1] += Math.ceil((character.coordinates[1]-this.coordinates[1]-300)/100);
 		if(character.coordinates[1]-this.coordinates[1] < 200)
 			this.coordinates[1] += Math.ceil((character.coordinates[1]-this.coordinates[1]-200)/100);
-	}
+	};
 	return obj;
 
+}
+
+function doubleJumpPowerUp(x,y)
+{
+    let obj = {};
+    obj.coordinates = [x,y];
+    obj.floatTimer = 0;
+    obj.direction = false;
+
+    obj.tick = function()
+    {
+        if (this.floatTimer >= 100)
+        {
+            this.floatTimer = 0;
+            this.direction = !this.direction;
+        }
+        else
+            this.floatTimer++;
+        if(this.direction)
+            this.coordinates[1] += 0.1;
+        else
+            this.coordinates[1] -= 0.1;
+
+        if (roughCollision(this.coordinates[0],this.coordinates[1],50,50,character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3]))
+        {
+            character.maxJumpCharges = 2;
+            currentRoom.active.splice(currentRoom.active.indexOf(this), 1);
+        }
+    };
+
+    obj.draw = function()
+    {
+        onScreenSurface.drawImage(spriteImage,110,0,50,50,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),50,50);
+    };
+
+    return obj;
+}
+
+function dashPowerUp(x,y)
+{
+    let obj = {};
+    obj.coordinates = [x,y];
+    obj.floatTimer = 0;
+    obj.direction = false;
+
+    obj.tick = function()
+    {
+        if (this.floatTimer >= 100)
+        {
+            this.floatTimer = 0;
+            this.direction = !this.direction;
+        }
+        else
+            this.floatTimer++;
+        if(this.direction)
+            this.coordinates[1] += 0.1;
+        else
+            this.coordinates[1] -= 0.1;
+
+        if (roughCollision(this.coordinates[0],this.coordinates[1],50,50,character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3]))
+        {
+            character.dashPowerup = true;
+            currentRoom.active.splice(currentRoom.active.indexOf(this), 1);
+        }
+    };
+
+    obj.draw = function()
+    {
+        onScreenSurface.drawImage(spriteImage,170,0,50,50,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),50,50);
+    };
+
+    return obj;
+}
+
+function enemy1(x,y,dir)
+{
+    let obj = {};
+    obj.coordinates = [x,y];
+    obj.directionFacing = dir;
+    obj.tick = function()
+    {
+        if(this.directionFacing == 0)
+            this.coordinates[1]--;
+        else if(this.directionFacing == 1)
+            this.coordinates[1]++;
+        else if(this.directionFacing == 2)
+            this.coordinates[0]--;
+        else if(this.directionFacing == 3)
+            this.coordinates[0]++;
+
+        for (let i= 0; i<currentRoom.static.length; i++)
+        {
+            if(tileList[currentRoom.static[i].tileNum].passable < 1)
+                if(roughCollision(this.coordinates[0],this.coordinates[1],50,50,currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w, tileList[currentRoom.static[i].tileNum].h))
+                {
+                    switch(tileList[currentRoom.static[i].tileNum].passable)
+                    {
+                        case -1:
+                            this.directionFacing = 0;
+                            break;
+                        case -2:
+                            this.directionFacing = 1;
+                            break;
+                        case -3:
+                            this.directionFacing = 2;
+                            break;
+                        case -4:
+                            this.directionFacing = 3;
+                            break;
+                    }
+                }
+        }
+
+        if (roughCollision(this.coordinates[0],this.coordinates[1],50,50,character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3]))
+            resetGame();
+
+    };
+
+    obj.draw = function()
+    {
+        onScreenSurface.drawImage(spikeImage,0,0,50,50,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),50,50);
+    };
+
+    return obj;
 }
