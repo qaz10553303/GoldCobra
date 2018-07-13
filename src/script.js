@@ -34,44 +34,6 @@ setTileList();//populates the list with hardcoded tile information
 
 let currentLevel =0;
 
-//Max size 12*12 scrolling not yet implemented
-//please do not create maps that the player can escape
-let mapArray =[ [
-    [1,1,1 ,1,1,1,1,1 ,1 ,1 ,1,1,1,1,1,1,1,1,1,1 ,1,1,1],
-    [1,0,0 ,0,0,5,0,0 ,0 ,5 ,0,5,0,0,5,0,0,0,0,13,0,0,1],
-    [1,0,0 ,0,0,5,0,10,0 ,5 ,0,5,0,0,5,0,0,0,0,0 ,0,0,1],
-    [1,0,0 ,0,0,4,4,4 ,4 ,4 ,0,5,0,0,5,0,0,0,0,0 ,0,7,1],
-    [1,6,0 ,0,0,0,0,0 ,0 ,0 ,0,4,4,4,4,0,0,0,0,0 ,0,1,1],
-    [1,1,1 ,1,0,0,0,0 ,0 ,0 ,0,0,0,0,0,0,0,0,0,0 ,1,1,1],
-    [1,0,0 ,0,0,0,0,0 ,0 ,0 ,1,0,0,0,0,0,0,0,0,0 ,1,1,1],
-    [1,0,0 ,0,0,0,0,0 ,0 ,1 ,1,1,0,0,0,0,0,0,0,0 ,1,1,1],
-    [1,9,15,0,0,0,0,11,14,1,1,1,0,0,0,0,0,0,11,12,1,1,1],
-    [1,1,1 ,1,1,1,1,1 ,0 ,1 ,1,1,1,1,1,1,1,1,1,1 ,1,1,1],
-    [1,1,1 ,1,1,1,1,1 ,0 ,1 ,1,1,1,1,1,1,1,1,1,1 ,1,1,1],
-    [1,1,1 ,1,1,1,1,1 ,8 ,1 ,1,1,1,1,1,1,1,1,1,1 ,1,1,1]
-]
-,[
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,6,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-]
-,[
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,6,1,1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-]];
 
 
 /*Empty: 0, deafult: 1, wood: 2, Stone 3, Metal 4, Bg: wires 5,
@@ -264,8 +226,8 @@ function createCharacter() //generates and contains game character
     obj.moveVector = [0,0]; // character movement vector
     obj.sprite = [9,2,25,40];
     obj.jumpCharges = 0;
-    obj.maxJumpCharges = 2;
-    obj.dashPowerup = true;
+    obj.maxJumpCharges = 1;
+    obj.dashPowerup = false;
     obj.jumpTimer = 0;
     obj.dashCd = 0;
     obj.dashTime = 0;
@@ -278,6 +240,7 @@ function createCharacter() //generates and contains game character
             this.moveVector[1] = -4;
             this.jumpCharges--;
 	        this.jumpTimer = 20;
+            JumpSFX.play();
         }
     };
     obj.dash = function()
@@ -286,6 +249,7 @@ function createCharacter() //generates and contains game character
         {
             this.dashCd = 60;
             this.dashTime = 10;
+            DashSFX.play();  
         }
 
     };
@@ -321,6 +285,7 @@ function createCharacter() //generates and contains game character
                         break;
                    case 2:
 			            currentLevel++;
+                        PortalSFX.play();
                         nextLevel();
                         break;
                    case 3:
@@ -410,6 +375,7 @@ function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to
 
 function resetGame()
 {
+    DeathSFX.play();
     character.moveVector[0] = 0;
     character.moveVector[1] = 0;
     character.maxJumpCharges =1;
@@ -478,6 +444,7 @@ function doubleJumpPowerUp(x,y)
         if (roughCollision(this.coordinates[0],this.coordinates[1],50,50,character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3]))
         {
             character.maxJumpCharges = 2;
+            PowerupSFX.play();						
             currentRoom.active.splice(currentRoom.active.indexOf(this), 1);
         }
     };
@@ -514,6 +481,7 @@ function dashPowerUp(x,y)
         if (roughCollision(this.coordinates[0],this.coordinates[1],50,50,character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3]))
         {
             character.dashPowerup = true;
+            PowerupSFX1.play();
             currentRoom.active.splice(currentRoom.active.indexOf(this), 1);
         }
     };
