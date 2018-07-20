@@ -36,6 +36,7 @@ function setTileList()
     tileList.push(tileInfo(48,639,16,16,1)); //castleMid single 33
     tileList.push(tileInfo(64,628,32,28,0)); //castleTop background 34
     tileList.push(tileInfo(174,243,10,10,-1)); //enemy Blocker 35
+    tileList.push(tileInfo(112,624,16,16,0)); //torch 36
 }
 
 levelPreventSpawn=[false,false,false,false]
@@ -63,6 +64,7 @@ function level0()
     obj.static.push(returnTile(170,925,27)); //pink flower
     obj.static.push(returnTile(140,925,27)); //pink flower
     obj.static.push(returnTile(200,895,25)); //sunflower
+
 
     ground(obj,-10,958,11);
     platform(obj,0,700,4,17);
@@ -166,10 +168,10 @@ function level1()
     obj.static.push(returnTile(750,415,28)); //vine
     obj.static.push(returnTile(830,415,28)); //vine
     obj.static.push(returnTile(30,470,28)); //vine
+    obj.static.push(returnTile(1770,595,36)); //torch
+    obj.static.push(returnTile(1850,595,36)); //torch
+    obj.static.push(returnTile(1930,595,36)); //torch
 
-
-
-    
 
     obj.active.push(fallingPlatform(1150,775));
     obj.active.push(fallingPlatform(1250,745));
