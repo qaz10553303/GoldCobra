@@ -108,7 +108,6 @@ function level0()
     obj.active.push(door(800,875,10,100,1,10,915)); //door to level 1
     obj.active.push(door(800,370,10,100,1,10,420)); //door to level 1
 
-
     return obj;
 }
 
@@ -186,10 +185,6 @@ function level1()
     obj.active.push(fallingPlatform(450,435));
     obj.active.push(fallingPlatform(540,425));
 
-
-
-    
-    
     obj.static.push(returnTile(570,395,35)); //enemy blocker
     obj.static.push(returnTile(945,395,35)); // enemy blocker
     

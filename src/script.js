@@ -59,7 +59,7 @@ function mainMenuBackground()
     LevelTheme.pause();
     LevelTheme.currentTime = 0;
     window.cancelAnimationFrame(currentAnimationFrame);
-    nextLevel(0,0,0);
+    nextLevel(0,0,700);
     generateRoomMap(0);
     generateBackground()
     menuWait = 60;
@@ -83,8 +83,8 @@ function mainMenu()
     {
         LevelTheme.play();	
         character = createCharacter();
-		//nextLevel(0,50,500);
-        nextLevel(1,1800,620);
+		nextLevel(0,50,920);
+        //nextLevel(1,1800,620);
         window.cancelAnimationFrame(currentAnimationFrame);
 		currentAnimationFrame = window.requestAnimationFrame(gameLoop);
 	}
@@ -127,18 +127,17 @@ function generateBackground()// draws background layer should only be called dur
 
 function drawMain() //draws all enemies player and interactive objects
 {
-    for(let i=0;i<Math.floor(character.health/2);i++)
+    for(let i=0;i<Math.floor(character.health/2);i++) //draws full hearts ui
         onScreenSurface.drawImage(heartImage,0,0,16,16,5+(35*i),5,16*2,16*2);
-    if(character.health%2 === 1)
+    if(character.health%2 === 1) // draws half hearts for ui
         onScreenSurface.drawImage(heartImage,0,15,16,16,5+(35*(Math.floor(character.health/2))),5,16*2,16*2);
-    for(let i=0;i<Math.ceil((character.maxHealth-character.health)/2)-character.health%2;i++)
+    for(let i=0;i<Math.ceil((character.maxHealth-character.health)/2)-character.health%2;i++) // draws empty hearts for ui
         onScreenSurface.drawImage(heartImage,1,30,16,16,5+(35*(i+Math.ceil(character.health/2))),5,16*2,16*2);
     character.draw();
     for(let i = 0; i < currentRoom.active.length;i++)
         currentRoom.active[i].draw();
     for(let i = 0; i < character.projectiles.length;i++)
         character.projectiles[i].draw();
-
 }
 
 function drawBackground() // draws UI ontop of everything else currently showing debug info
@@ -150,9 +149,9 @@ function drawBackground() // draws UI ontop of everything else currently showing
 function userInputHandler() //accepts and applies player input
 {
     if(keysPressed.includes(37))//left
-        character.moveVector[0] -= 1;
+        character.moveVector[0] -= 0.3;
     if(keysPressed.includes(39))//right
-        character.moveVector[0] += 1;
+        character.moveVector[0] += 0.3;
     if(keysPressed.includes(38))//up
         character.jump();
     else
@@ -161,13 +160,10 @@ function userInputHandler() //accepts and applies player input
         character.dash();
     else
         character.dashTap = true;
-    if(keysPressed.includes(90))
+    if(keysPressed.includes(90))//z
         character.shoot();
     else
         character.projectileTap = true;
-
-
-
 }
 
 function gameLogic() //updates all game functions and ai
@@ -177,7 +173,6 @@ function gameLogic() //updates all game functions and ai
     character.tick(); //ticks character
     for(let i = 0; i < currentRoom.active.length;i++)
         currentRoom.active[i].tick();
-
 	camera.tick();
 }
 
@@ -228,16 +223,14 @@ function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to
     else if (b_collision < t_collision && b_collision < l_collision && b_collision < r_collision && character.moveVector[1]<0)
     {
         character.moveVector[1]  = 0;
-        character.coordinates[1]  += b_collision+1;
+        character.coordinates[1]  += b_collision;
     }
     else if (l_collision < r_collision && l_collision < t_collision && l_collision < b_collision && character.moveVector[0]>=0)
     {
-        //character.moveVector[0] = 0;
         character.coordinates[0]  -= l_collision;
     }
     else if (r_collision < l_collision && r_collision < t_collision && r_collision < b_collision && character.moveVector[0]<=0)
     {
-       // character.moveVector[0] = 0;
         character.coordinates[0]  += r_collision;
     }
 
@@ -267,8 +260,6 @@ function nextLevel(goto,x,y)
         camera.coordinates[1] = 0;
     if(camera.coordinates[1]>currentRoom.maxCamera[1]-600)
         camera.coordinates[1] = currentRoom.maxCamera[1]-600;
-
-
     generateBackground();
 }
 
@@ -288,7 +279,6 @@ function createCamera()
 			this.coordinates[1] += Math.ceil((character.coordinates[1]-this.coordinates[1]-300)/100);
 	};
 	return obj;
-
 }
 
 function messageSystem(message)

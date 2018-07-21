@@ -10,10 +10,9 @@ function createCharacter() //generates and contains game character
     obj.jumpPowerup = false;
     obj.jumpTap = true;
         
-    obj.dashPowerup = false;
+    obj.dashPowerup = true;
     obj.dashTap = false;
     obj.dashGround = false;
-    obj.dashTime = 0;
     obj.dashCd = 0;
     
     obj.state = 1;
@@ -28,7 +27,6 @@ function createCharacter() //generates and contains game character
     obj.projectiles = [];
     obj.projectilePowerup = false;
     obj.projectileTap = false;
-    obj.projectileCd = 0;
     
     obj.iFrames = 0;
     
@@ -51,10 +49,11 @@ function createCharacter() //generates and contains game character
         if(this.dashTap && this.dashPowerup && this.dashGround && this.dashCd < 0)
         {
             this.dashCd = 60;
-            this.dashTime = 10;
             DashSFX.play();
             this.dashTap = false;
             this.dashGround = false;
+            this.moveVector[0] += 20*Math.sign(this.state);
+
         }
                          
     };
@@ -70,11 +69,10 @@ function createCharacter() //generates and contains game character
     
     obj.shoot = function()
     {
-        if(this.projectileTap && this.projectilePowerup && this.projectileCd < 1)
+        if(this.projectileTap && this.projectilePowerup)
         {
-            this.projectileCd = 60;
+            //this.projectileCd = 60;
             this.projectiles.push(projectile(this.coordinates[0],this.coordinates[1],this.state));
-            //DashSFX.play();
             this.projectileTap = false;
         }
                          
@@ -105,34 +103,20 @@ function createCharacter() //generates and contains game character
             this.animationFrame ++;
         if(this.animationFrame > 10000)
             this.animationFrame = 1;
-  
-        if(this.dashTime >= 0)
-        {
-            this.dashTime--;
-            if(this.state < 0)
-                this.moveVector[0] = -this.dashTime*3;
-            else
-                this.moveVector[0] = this.dashTime*3;
-            this.moveVector[1] = 0;
-        }
         this.coordinates[0] += this.moveVector[0];
         this.coordinates[1] += this.moveVector[1];
-        this.moveVector[0] = this.moveVector[0]*0.80; //friction
-        if(Math.abs(this.moveVector[0])<0.9) //friction
+        this.moveVector[0] = this.moveVector[0]*0.8; //friction
+
+        if(Math.abs(this.moveVector[0])<0.1) //friction
             this.moveVector[0] = 0;
         this.moveVector[1] += 0.1; //gravity
 	    if(this.moveVector[1]>5)
             this.moveVector[1] = 5; //gravity
-        if(this.moveVector[1]< -5)
-            this.moveVector[1] = -5; //gravity
-
 
         if(this.dashCd >= 0)
             this.dashCd--;
         if(this.iFrames > 0)
             this.iFrames--;
-        if(this.projectileCd >= 0)
-            this.projectileCd--;
         this.jump1 = false;
         for (let i= 0; i<currentRoom.static.length; i++)
         {
@@ -158,10 +142,9 @@ function createCharacter() //generates and contains game character
     obj.draw = function()
     {
         
-        /*onScreenSurface.font = "20px Courier New";
-        onScreenSurface.fillStyle = 'White';
-        onScreenSurface.fillText(this.coordinates.toString(),70,70);*/
-
+        //onScreenSurface.font = "20px Courier New";
+        //onScreenSurface.fillStyle = 'White';
+        //onScreenSurface.fillText(this.moveVector[1].toString(),70,70);
 
         if(this.iFrames%2 == 0)
         {
@@ -301,6 +284,7 @@ function projectile(x,y,dir)
     let obj = {};
     obj.coordinates = [x+10,y+10];
     obj.direction;
+    ShootSFX.currentTime = 0;						
     ShootSFX.play();						
     if(dir>0)
         obj.direction = true;
@@ -313,7 +297,18 @@ function projectile(x,y,dir)
     
     obj.tick = function()
     {
-       if(this.direction)
+        for (let i = 0; i<currentRoom.static.length; i++)
+        {
+            if(tileList[currentRoom.static[i].tileNum].passable > 0)
+            {
+                if(roughCollision(this.coordinates[0],this.coordinates[1],30,30,currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w*2, tileList[currentRoom.static[i].tileNum].h*2))
+                {
+                    character.projectiles.splice(character.projectiles.indexOf(this), 1);
+                    i =currentRoom.static.length;
+                }
+            }
+        }
+        if(this.direction)
            this.coordinates[0]+=5;
         else      
            this.coordinates[0]-=5;
@@ -321,12 +316,6 @@ function projectile(x,y,dir)
         if(this.ttl < 0)
              character.projectiles.splice(character.projectiles.indexOf(this), 1);
 
-        for (let i= 0; i<currentRoom.static.length; i++)
-        {
-            if(tileList[currentRoom.static[i].tileNum].passable > 0)
-                if(roughCollision(this.coordinates[0],this.coordinates[1],30,30,currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w*2, tileList[currentRoom.static[i].tileNum].h*2))
-                     character.projectiles.splice(character.projectiles.indexOf(this), 1);
-        }
     };
     obj.draw = function()
     {
@@ -346,15 +335,12 @@ function movingPlatform(x,y,length,type,x2,y2)
     obj.wait = 0;
     obj.remainingDistance = Math.sqrt(Math.pow((obj.destination[0]-obj.start[0]),2)+Math.pow((obj.destination[1]-obj.start[1]),2));
     obj.movementAngle = Math.atan2(obj.destination[0] - obj.coordinates[0],obj.destination[1]- obj.coordinates[1]);
-
     
     obj.platformCanvas = document.createElement('canvas');
     obj.platformCanvas.width = (length*32);
     obj.platformCanvas.height = 32;
     obj.platformSurface = obj.platformCanvas.getContext("2d");
-    obj.platformSurface.imageSmoothingEnabled = false;
-
-    
+    obj.platformSurface.imageSmoothingEnabled = false;   
     if (length > 1)
     {
         obj.platformSurface.drawImage(tilesImage,tileList[type].x,tileList[type].y,
@@ -386,8 +372,6 @@ function movingPlatform(x,y,length,type,x2,y2)
         }
         else
             this.wait--;
-        
-
         
         if (roughCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],
                            this.coordinates[0],this.coordinates[1],this.hitbox[0],this.hitbox[1]))
@@ -658,9 +642,7 @@ function platform(obj,x,y,length,type)
         obj.static.push(returnTile(x+((length-1)*32),y,type+2));
     }
     else
-        obj.static.push(returnTile(x,y,type+3));
-
-    
+        obj.static.push(returnTile(x,y,type+3));    
 }
 
 function ground(obj,x,y,length)
