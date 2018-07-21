@@ -84,7 +84,7 @@ function mainMenu()
         LevelTheme.play();	
         character = createCharacter();
 		nextLevel(0,50,920);
-        //nextLevel(1,1800,620);
+        //nextLevel(1,100,220);
         window.cancelAnimationFrame(currentAnimationFrame);
 		currentAnimationFrame = window.requestAnimationFrame(gameLoop);
 	}
@@ -120,7 +120,7 @@ function generateBackground()// draws background layer should only be called dur
             {
                 offScreenSurface.fillStyle = 'green';
                 offScreenSurface.fillRect(currentRoom.static[i].x,currentRoom.static[i].y,20,20);
-            }*///shows enemy blockers
+            }//shows enemy blockers*/
 
     }
 }

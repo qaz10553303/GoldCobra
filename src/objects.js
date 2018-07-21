@@ -10,7 +10,7 @@ function createCharacter() //generates and contains game character
     obj.jumpPowerup = false;
     obj.jumpTap = true;
         
-    obj.dashPowerup = true;
+    obj.dashPowerup = false;
     obj.dashTap = false;
     obj.dashGround = false;
     obj.dashCd = 0;
@@ -71,7 +71,6 @@ function createCharacter() //generates and contains game character
     {
         if(this.projectileTap && this.projectilePowerup)
         {
-            //this.projectileCd = 60;
             this.projectiles.push(projectile(this.coordinates[0],this.coordinates[1],this.state));
             this.projectileTap = false;
         }
@@ -80,7 +79,7 @@ function createCharacter() //generates and contains game character
     
     obj.tick = function ()
     {
-        if(this.dead)
+        if(this.dead)//death handler
             resetGame();
         else if(this.health<1)
         {
@@ -88,39 +87,39 @@ function createCharacter() //generates and contains game character
             this.dead = true;
         }
         
-        userInputHandler();
-        if (this.moveVector[1] == 0 && this.moveVector[0] != 0)
+        userInputHandler();//user input 
+        
+        if (this.moveVector[1] == 0 && this.moveVector[0] != 0)//player animation handler
             this.state = 1;
         else if (this.moveVector[1] > 0 && this.moveVector[0] != 0)
              this.state = 2;
         else if (this.moveVector[1] < 0 && this.moveVector[0] != 0)
-             this.state = 3;
-        
+             this.state = 3; 
         if(this.moveVector[0] < 0)
             this.state = this.state*(-1);
-        
         if(this.moveVector[0] != 0)
             this.animationFrame ++;
         if(this.animationFrame > 10000)
             this.animationFrame = 1;
-        this.coordinates[0] += this.moveVector[0];
+        
+        this.coordinates[0] += this.moveVector[0];//physics handler
         this.coordinates[1] += this.moveVector[1];
         this.moveVector[0] = this.moveVector[0]*0.8; //friction
-
         if(Math.abs(this.moveVector[0])<0.1) //friction
             this.moveVector[0] = 0;
         this.moveVector[1] += 0.1; //gravity
 	    if(this.moveVector[1]>5)
             this.moveVector[1] = 5; //gravity
 
-        if(this.dashCd >= 0)
+        if(this.dashCd >= 0) //dash timer
             this.dashCd--;
-        if(this.iFrames > 0)
+        if(this.iFrames > 0) //invincibility frame timer
             this.iFrames--;
-        this.jump1 = false;
-        for (let i= 0; i<currentRoom.static.length; i++)
+        this.jump1 = false; //prevents using first jump after leaving platform
+        
+        for (let i= 0; i<currentRoom.static.length; i++)//handles all collision with static objects
         {
-            if(tileList[currentRoom.static[i].tileNum].passable > 0)
+            if(tileList[currentRoom.static[i].tileNum].passable > 0)//ignores background elemnts and enemy blockers
                 if(roughCollision(this.coordinates[0],this.coordinates[1],this.sprite[2],this.sprite[3],currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w*2, tileList[currentRoom.static[i].tileNum].h*2))
                 {
                     switch(tileList[currentRoom.static[i].tileNum].passable)
@@ -142,11 +141,11 @@ function createCharacter() //generates and contains game character
     obj.draw = function()
     {
         
-        //onScreenSurface.font = "20px Courier New";
-        //onScreenSurface.fillStyle = 'White';
-        //onScreenSurface.fillText(this.moveVector[1].toString(),70,70);
+        /*onScreenSurface.font = "20px Courier New";
+        onScreenSurface.fillStyle = 'White';
+        onScreenSurface.fillText(this.coordinates.toString(),70,70);//Debug info */
 
-        if(this.iFrames%2 == 0)
+        if(this.iFrames%2 == 0) //strobes player for invincibility frames
         {
             if(Math.abs(this.state) == 1)// on the ground 
             {
@@ -196,8 +195,8 @@ function door(x,y,w,h,level,cx,cy)
     };
     obj.draw = function()
     {
-        onScreenSurface.fillStyle = 'red';
-        onScreenSurface.fillRect(this.coordinates[0]-camera.coordinates[0],this.coordinates[1]-camera.coordinates[1],this.coordinates[2],this.coordinates[3]);
+        //onScreenSurface.fillStyle = 'red';
+        //onScreenSurface.fillRect(this.coordinates[0]-camera.coordinates[0],this.coordinates[1]-camera.coordinates[1],this.coordinates[2],this.coordinates[3]);
     };
     return obj;
 }
@@ -237,21 +236,167 @@ function slime(x,y)
     obj.coordinates = [x,y];
     obj.direction = true;
     obj.bounceAngle = 0;
+    obj.animationTimer = 0;
+    obj.dead = false;
     obj.tick = function()
     {
+        if(!this.dead)
+        {
+            for(let i = 0;i<character.projectiles.length;i++)
+                if (roughCollision(this.coordinates[0],this.coordinates[1],32,32,character.projectiles[i].coordinates[0],character.projectiles[i].coordinates[1],20,20))
+                {
+                    SlimeSFX.play();
+                    this.dead = true;
+                    this.animationTimer =0;
+                    character.projectiles.splice(character.projectiles.indexOf(i), 1);
+                    i = character.projectiles.length;
+                }
+            if (roughCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],this.coordinates[0],this.coordinates[1],32,32))
+            {
+                FallSFX.play();						
+                this.bounceAngle = Math.atan2((this.coordinates[0]+16)-(character.coordinates[0]+15),(this.coordinates[1]+16)-(character.coordinates[1]+23));
+                character.hurt();
+                character.moveVector[0] -= 20*Math.sin(this.bounceAngle);
+                character.moveVector[1] = -5*Math.cos(this.bounceAngle);
+            }
+            for (let i= 0; i<currentRoom.static.length; i++)
+            {
+                if(tileList[currentRoom.static[i].tileNum].passable == -1)
+                {
+                    if(roughCollision(this.coordinates[0],this.coordinates[1],32,32,currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w*2, tileList[currentRoom.static[i].tileNum].h*2))
+                        this.direction = !this.direction
+                }
+            }
+            if(this.direction)
+                this.coordinates[0]+=1;
+            else
+                this.coordinates[0]-=1;
+        }
+        else
+        {            
+            if(this.animationTimer == 59)
+                currentRoom.active.splice(currentRoom.active.indexOf(this), 1);
+        }
+        this.animationTimer ++;
+        if(this.animationTimer > 10000)
+            this.animationTimer = 0;
+
+    };
+    obj.draw = function()
+    {
+        if(!this.direction)
+        {
+            if(!this.dead)
+            {
+                onScreenSurface.drawImage(tilesImage,242+(32*(Math.floor(this.animationTimer/6)%10)),235,16,16,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
+            }
+            else 
+            {
+                onScreenSurface.drawImage(tilesImage,242+(32*(Math.floor(this.animationTimer/6)%10)),255,16,16,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
+            }
+        }
+        else
+        {
+            if(!this.dead)
+            {
+                onScreenSurface.drawImage(tilesImage,531-(32*(Math.floor(this.animationTimer/6)%10)),274,16,16,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
+            }
+            else
+            {
+                onScreenSurface.drawImage(tilesImage,251-(32*(Math.floor(this.animationTimer/6)%10)),296,16,16,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
+            }
+        }
+    };
+    return obj;
+}
+
+function bird(x,y)
+{
+    let obj = {};
+    obj.coordinates = [x,y];
+    obj.returnCoordinates = [x,y];
+    obj.targetCoordinates = [x,y];
+    obj.diveState = false;
+    obj.direction = true;
+    obj.visualState = true;
+    obj.diveTimer = 0;
+    obj.characterDistance = 250;
+    obj.bounceAngle = 0;
+    obj.diveAngle = 0;
+    obj.animationTimer = 0;
+    obj.tick = function()
+    {
+        if(this.characterDistance < 190 && !this.diveState) //checks if enemy should dive
+        {
+            this.diveState = true;
+            this.targetCoordinates = [character.coordinates[0]+15,character.coordinates[1]+23]
+            this.diveTimer = 0;
+            this.diveAngle = Math.atan2(this.targetCoordinates[0]-(this.coordinates[0]+32),(this.targetCoordinates[1]-this.coordinates[1]+32));
+            if(this.diveAngle > 0)
+                this.visualState = true;
+            else
+                this.visualState = false;
+        }
+        
+        if(this.direction)
+            this.returnCoordinates[0]+=1;
+        else if (!this.direction)
+            this.returnCoordinates[0]-=1;
+
+        if(!this.diveState) //normal state
+        {
+            this.coordinates = [this.returnCoordinates[0],this.returnCoordinates[1]];
+            this.characterDistance = Math.sqrt(Math.pow(((character.coordinates[0]+15)-(this.coordinates[0]+32)),2)
+                            +Math.pow(((character.coordinates[1]+23)-(this.coordinates[1]+32)),2));
+            this.visualState = this.direction;
+        }
+        else if (this.diveTimer == 0) //dive
+        {
+            this.coordinates[0] += 2*Math.sin(this.diveAngle);
+            this.coordinates[1] += 2*Math.cos(this.diveAngle);
+            if((Math.abs(this.coordinates[1]-this.targetCoordinates[1]) <=3))
+            {
+                this.diveTimer++;
+            }
+        }
+        else if (this.diveTimer <= 50) //move after dive
+        {
+            if(this.visualState)
+                this.coordinates[0] +=1;
+            else
+                this.coordinates[0] -= 1;
+            this.diveTimer ++;
+        }
+        else // return to normal state
+        {
+            this.diveAngle = Math.atan2(this.returnCoordinates[0]-this.coordinates[0],this.returnCoordinates[1]-this.coordinates[1]);
+            this.coordinates[0] += 1*Math.sin(this.diveAngle);
+            this.coordinates[1] += 1*Math.cos(this.diveAngle);
+            if(this.diveAngle > 0)
+                this.visualState = true;
+            else
+                this.visualState = false;
+            if(Math.abs(this.coordinates[1] - this.returnCoordinates[1]) <=3)
+            {
+                this.diveState = false;
+                this.direction = this.visualState;
+                this.characterDistance = Math.sqrt(Math.pow(((character.coordinates[0]+15)-(this.coordinates[0]+32)),2)
+                    +Math.pow(((character.coordinates[1]+23)-(this.coordinates[1]+32)),2));
+            }
+        }
+        
         for(let i = 0;i<character.projectiles.length;i++)
-            if (roughCollision(this.coordinates[0],this.coordinates[1],64,32,character.projectiles[i].coordinates[0],character.projectiles[i].coordinates[1],20,20))
+            if (roughCollision(this.coordinates[0],this.coordinates[1],64,64,character.projectiles[i].coordinates[0],character.projectiles[i].coordinates[1],20,20))
         {
                     SlimeSFX.play();						
                     currentRoom.active.splice(currentRoom.active.indexOf(this), 1);
-                    levelPreventSpawn[this.num]= true;
                     character.projectiles.splice(character.projectiles.indexOf(i), 1);
         }
         
-        if (roughCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],this.coordinates[0],this.coordinates[1],64,32))
+        if (roughCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],this.coordinates[0],this.coordinates[1],64,64))
         {
             FallSFX.play();						
-            this.bounceAngle = Math.atan2((this.coordinates[0]+16)-(character.coordinates[0]+15),(this.coordinates[1]+16)-(character.coordinates[1]+23));
+            this.bounceAngle = Math.atan2((this.coordinates[0]+32)-(character.coordinates[0]+15),(this.coordinates[1]+32)-(character.coordinates[1]+23));
             character.hurt();
             character.moveVector[0] -= 20*Math.sin(this.bounceAngle);
             character.moveVector[1] = -5*Math.cos(this.bounceAngle);
@@ -260,21 +405,33 @@ function slime(x,y)
         {
             if(tileList[currentRoom.static[i].tileNum].passable == -1)
             {
-                if(roughCollision(this.coordinates[0],this.coordinates[1],64,32,currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w*2, tileList[currentRoom.static[i].tileNum].h*2))
-                    this.direction = !this.direction
+                if(roughCollision(this.returnCoordinates[0],this.returnCoordinates[1],64,64,currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w*2, tileList[currentRoom.static[i].tileNum].h*2))
+                    this.direction = !this.direction;
             }
         }
-        if(this.direction)
-            this.coordinates[0]+=1;
-        else
-            this.coordinates[0]-=1;
+        this.animationTimer ++;
+        if(this.animationTimer > 10000)
+            this.animationTimer = 0;
+
+    
     };
     obj.draw = function()
     {
-        if(this.direction)
-            onScreenSurface.drawImage(tilesImage,412,435,32,16,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,32);
-        else        
-            onScreenSurface.drawImage(tilesImage,379,435,32,16,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,32);
+        if(!this.visualState)
+        {
+            if(!this.diveState || this.diveTimer != 0)
+                onScreenSurface.drawImage(tilesImage,261+(32*(Math.floor(this.animationTimer/6)%5)),76,32,52,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,104);
+            else
+                onScreenSurface.drawImage(tilesImage,261+(32*2),76,32,52,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,104);
+        }
+        else
+        {
+            if(!this.diveState || this.diveTimer != 0)
+                onScreenSurface.drawImage(tilesImage,397-(32*(Math.floor(this.animationTimer/6)%5)),136,32,44,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,88);
+            else
+                onScreenSurface.drawImage(tilesImage,397-(32*2),136,32,44,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,88);
+
+        }
     };
     return obj;
 }
@@ -319,7 +476,7 @@ function projectile(x,y,dir)
     };
     obj.draw = function()
     {
-        onScreenSurface.drawImage(tilesImage,259,467,15,15,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),30,30);
+        onScreenSurface.drawImage(tilesImage,268,8,15,15,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),30,30);
     };
     return obj;
 }
@@ -389,7 +546,7 @@ function movingPlatform(x,y,length,type,x2,y2)
     obj.draw = function()
     {
         onScreenSurface.drawImage(this.platformCanvas,0,0,this.hitbox[0],this.hitbox[1],Math.floor(this.coordinates[0]-camera.coordinates[0]),
-                                  Math.floor(this.coordinates[1]-camera.coordinates[1]),this.hitbox[0],this.hitbox[1]);
+            Math.floor(this.coordinates[1]-camera.coordinates[1]),this.hitbox[0],this.hitbox[1]);
     };
 
     return obj;
@@ -599,7 +756,7 @@ function healthPickup(x,y,num)
 
     obj.draw = function()
     {
-        onScreenSurface.drawImage(heartImage,0,15,16,16,this.coordinates[0]-camera.coordinates[0],this.coordinates[1]-camera.coordinates[1],16*2,16*2);
+        onScreenSurface.drawImage(heartImage,0,15,16,16,Math.floor(this.coordinates[0]-camera.coordinates[0]),Math.floor(this.coordinates[1]-camera.coordinates[1]),16*2,16*2);
     };
 
     return obj;

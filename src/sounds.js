@@ -23,7 +23,3 @@ ShootSFX.src = "sounds/Shoot.wav";
 SlimeSFX.src = "sounds/Slime.wav";
 LevelTheme.src = "sounds/Level.mp3";
 LevelTheme.loop = true;
-
-
-
-

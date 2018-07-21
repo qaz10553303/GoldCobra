@@ -185,11 +185,20 @@ function level1()
     obj.active.push(fallingPlatform(450,435));
     obj.active.push(fallingPlatform(540,425));
 
-    obj.static.push(returnTile(570,395,35)); //enemy blocker
-    obj.static.push(returnTile(945,395,35)); // enemy blocker
     
+    obj.static.push(returnTile(570,195,35)); //enemy blocker
+    obj.static.push(returnTile(945,195,35)); // enemy blocker
 
-    obj.active.push(slime(600,383));
+    //obj.static.push(returnTile(570,395,35)); //enemy blocker
+    //obj.static.push(returnTile(945,395,35)); // enemy blocker
+    obj.static.push(returnTile(780,765,35)); //enemy blocker
+    obj.static.push(returnTile(1113,765,35)); // enemy blocker
+
+    
+    obj.active.push(bird(600,183));
+    //obj.active.push(slime(600,383));
+    obj.active.push(slime(900,753));
+
     if(!levelPreventSpawn[2])
         obj.active.push(breakable(70,862,2));
     if(!levelPreventSpawn[3])
@@ -203,7 +212,8 @@ function level1()
     return obj;
 }
 
-function level2() {
+function level2() 
+{
     let obj = {};
     obj.static = [];
     obj.active = [];
