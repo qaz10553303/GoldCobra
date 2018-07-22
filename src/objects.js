@@ -195,8 +195,8 @@ function door(x,y,w,h,level,cx,cy)
     };
     obj.draw = function()
     {
-        //onScreenSurface.fillStyle = 'red';
-        //onScreenSurface.fillRect(this.coordinates[0]-camera.coordinates[0],this.coordinates[1]-camera.coordinates[1],this.coordinates[2],this.coordinates[3]);
+        onScreenSurface.fillStyle = 'red';
+        onScreenSurface.fillRect(this.coordinates[0]-camera.coordinates[0],this.coordinates[1]-camera.coordinates[1],this.coordinates[2],this.coordinates[3]);
     };
     return obj;
 }
@@ -215,6 +215,7 @@ function breakable(x,y,num)
                     currentRoom.active.splice(currentRoom.active.indexOf(this), 1);
                     levelPreventSpawn[this.num]= true;
                     character.projectiles.splice(character.projectiles.indexOf(i), 1);
+                    currentRoom.active.push(explosion(this.coordinates[0],this.coordinates[1]));
             }
         
         if (roughCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],
@@ -249,6 +250,7 @@ function slime(x,y)
                     this.dead = true;
                     this.animationTimer =0;
                     character.projectiles.splice(character.projectiles.indexOf(i), 1);
+                    currentRoom.active.push(explosion(this.coordinates[0],this.coordinates[1]));
                     i = character.projectiles.length;
                 }
             if (roughCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],this.coordinates[0],this.coordinates[1],32,32))
@@ -303,7 +305,7 @@ function slime(x,y)
             }
             else
             {
-                onScreenSurface.drawImage(tilesImage,251-(32*(Math.floor(this.animationTimer/6)%10)),296,16,16,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
+                onScreenSurface.drawImage(tilesImage,532-(32*(Math.floor(this.animationTimer/6)%10)),295,16,16,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
             }
         }
     };
@@ -324,90 +326,102 @@ function bird(x,y)
     obj.bounceAngle = 0;
     obj.diveAngle = 0;
     obj.animationTimer = 0;
+    obj.dead = false;
     obj.tick = function()
     {
-        if(this.characterDistance < 190 && !this.diveState) //checks if enemy should dive
+        if(!this.dead)
         {
-            this.diveState = true;
-            this.targetCoordinates = [character.coordinates[0]+15,character.coordinates[1]+23]
-            this.diveTimer = 0;
-            this.diveAngle = Math.atan2(this.targetCoordinates[0]-(this.coordinates[0]+32),(this.targetCoordinates[1]-this.coordinates[1]+32));
-            if(this.diveAngle > 0)
-                this.visualState = true;
-            else
-                this.visualState = false;
-        }
-        
-        if(this.direction)
-            this.returnCoordinates[0]+=1;
-        else if (!this.direction)
-            this.returnCoordinates[0]-=1;
+            if(this.characterDistance < 190 && !this.diveState) //checks if enemy should dive
+            {
+                this.diveState = true;
+                this.targetCoordinates = [character.coordinates[0]+15,character.coordinates[1]+23]
+                this.diveTimer = 0;
+                this.diveAngle = Math.atan2(this.targetCoordinates[0]-(this.coordinates[0]+32),(this.targetCoordinates[1]-this.coordinates[1]+32));
+                if(this.diveAngle > 0)
+                    this.visualState = true;
+                else
+                    this.visualState = false;
+            }
 
-        if(!this.diveState) //normal state
-        {
-            this.coordinates = [this.returnCoordinates[0],this.returnCoordinates[1]];
-            this.characterDistance = Math.sqrt(Math.pow(((character.coordinates[0]+15)-(this.coordinates[0]+32)),2)
-                            +Math.pow(((character.coordinates[1]+23)-(this.coordinates[1]+32)),2));
-            this.visualState = this.direction;
-        }
-        else if (this.diveTimer == 0) //dive
-        {
-            this.coordinates[0] += 2*Math.sin(this.diveAngle);
-            this.coordinates[1] += 2*Math.cos(this.diveAngle);
-            if((Math.abs(this.coordinates[1]-this.targetCoordinates[1]) <=3))
+            if(this.direction)
+                this.returnCoordinates[0]+=2;
+            else if (!this.direction)
+                this.returnCoordinates[0]-=2;
+
+            if(!this.diveState) //normal state
             {
-                this.diveTimer++;
-            }
-        }
-        else if (this.diveTimer <= 50) //move after dive
-        {
-            if(this.visualState)
-                this.coordinates[0] +=1;
-            else
-                this.coordinates[0] -= 1;
-            this.diveTimer ++;
-        }
-        else // return to normal state
-        {
-            this.diveAngle = Math.atan2(this.returnCoordinates[0]-this.coordinates[0],this.returnCoordinates[1]-this.coordinates[1]);
-            this.coordinates[0] += 1*Math.sin(this.diveAngle);
-            this.coordinates[1] += 1*Math.cos(this.diveAngle);
-            if(this.diveAngle > 0)
-                this.visualState = true;
-            else
-                this.visualState = false;
-            if(Math.abs(this.coordinates[1] - this.returnCoordinates[1]) <=3)
-            {
-                this.diveState = false;
-                this.direction = this.visualState;
+                this.coordinates = [this.returnCoordinates[0],this.returnCoordinates[1]];
                 this.characterDistance = Math.sqrt(Math.pow(((character.coordinates[0]+15)-(this.coordinates[0]+32)),2)
-                    +Math.pow(((character.coordinates[1]+23)-(this.coordinates[1]+32)),2));
+                                +Math.pow(((character.coordinates[1]+23)-(this.coordinates[1]+32)),2));
+                this.visualState = this.direction;
             }
-        }
-        
-        for(let i = 0;i<character.projectiles.length;i++)
-            if (roughCollision(this.coordinates[0],this.coordinates[1],64,64,character.projectiles[i].coordinates[0],character.projectiles[i].coordinates[1],20,20))
-        {
-                    SlimeSFX.play();						
-                    currentRoom.active.splice(currentRoom.active.indexOf(this), 1);
-                    character.projectiles.splice(character.projectiles.indexOf(i), 1);
-        }
-        
-        if (roughCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],this.coordinates[0],this.coordinates[1],64,64))
-        {
-            FallSFX.play();						
-            this.bounceAngle = Math.atan2((this.coordinates[0]+32)-(character.coordinates[0]+15),(this.coordinates[1]+32)-(character.coordinates[1]+23));
-            character.hurt();
-            character.moveVector[0] -= 20*Math.sin(this.bounceAngle);
-            character.moveVector[1] = -5*Math.cos(this.bounceAngle);
-        }
-        for (let i= 0; i<currentRoom.static.length; i++)
-        {
-            if(tileList[currentRoom.static[i].tileNum].passable == -1)
+            else if (this.diveTimer == 0) //dive
             {
-                if(roughCollision(this.returnCoordinates[0],this.returnCoordinates[1],64,64,currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w*2, tileList[currentRoom.static[i].tileNum].h*2))
-                    this.direction = !this.direction;
+                this.coordinates[0] += 3*Math.sin(this.diveAngle);
+                this.coordinates[1] += 3*Math.cos(this.diveAngle);
+                if((Math.abs(this.coordinates[1]-this.targetCoordinates[1]) <=3))
+                {
+                    this.diveTimer++;
+                }
             }
+            else if (this.diveTimer <= 50) //move after dive
+            {
+                if(this.visualState)
+                    this.coordinates[0] +=2;
+                else
+                    this.coordinates[0] -= 2;
+                this.diveTimer ++;
+            }
+            else // return to normal state
+            {
+                this.diveAngle = Math.atan2(this.returnCoordinates[0]-this.coordinates[0],this.returnCoordinates[1]-this.coordinates[1]);
+                this.coordinates[0] += 2*Math.sin(this.diveAngle);
+                this.coordinates[1] += 2*Math.cos(this.diveAngle);
+                if(this.diveAngle > 0)
+                    this.visualState = true;
+                else
+                    this.visualState = false;
+                if(Math.abs(this.coordinates[1] - this.returnCoordinates[1]) <=3)
+                {
+                    this.diveState = false;
+                    this.direction = this.visualState;
+                    this.characterDistance = Math.sqrt(Math.pow(((character.coordinates[0]+15)-(this.coordinates[0]+32)),2)
+                        +Math.pow(((character.coordinates[1]+23)-(this.coordinates[1]+32)),2));
+                }
+            }
+
+            for(let i = 0;i<character.projectiles.length;i++)
+                if (roughCollision(this.coordinates[0],this.coordinates[1]+25,64,39,character.projectiles[i].coordinates[0],character.projectiles[i].coordinates[1],20,20))
+                {
+                    BirdSFX.play();
+                    this.dead = true;
+                    this.animationTimer = 0;
+                    character.projectiles.splice(character.projectiles.indexOf(i), 1);
+                    currentRoom.active.push(explosion(this.coordinates[0]-5,this.coordinates[1]-20));
+                }
+
+            if (roughCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],this.coordinates[0],this.coordinates[1]+25,64,39))
+            {
+                FallSFX.play();						
+                this.bounceAngle = Math.atan2((this.coordinates[0]+32)-(character.coordinates[0]+15),(this.coordinates[1]+32)-(character.coordinates[1]+23));
+                character.hurt();
+                character.moveVector[0] -= 20*Math.sin(this.bounceAngle);
+                character.moveVector[1] = -5*Math.cos(this.bounceAngle);
+            }
+            for (let i= 0; i<currentRoom.static.length; i++)
+            {
+                if(tileList[currentRoom.static[i].tileNum].passable == -1)
+                {
+                    if(roughCollision(this.returnCoordinates[0],this.returnCoordinates[1],64,64,currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w*2, tileList[currentRoom.static[i].tileNum].h*2))
+                        this.direction = !this.direction;
+                }
+            }
+        }
+        else
+        {
+            this.coordinates[1] +=3;
+            if(this.animationTimer>200)
+                currentRoom.active.splice(currentRoom.active.indexOf(this), 1);
         }
         this.animationTimer ++;
         if(this.animationTimer > 10000)
@@ -417,20 +431,27 @@ function bird(x,y)
     };
     obj.draw = function()
     {
-        if(!this.visualState)
+        if(!this.dead)
         {
-            if(!this.diveState || this.diveTimer != 0)
-                onScreenSurface.drawImage(tilesImage,261+(32*(Math.floor(this.animationTimer/6)%5)),76,32,52,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,104);
+            if(!this.visualState)
+            {
+                if(!this.diveState || this.diveTimer != 0)
+                    onScreenSurface.drawImage(tilesImage,261+(32*(Math.floor(this.animationTimer/6)%5)),76,32,52,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,104);
+                else
+                    onScreenSurface.drawImage(tilesImage,261+(32*2),76,32,52,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,104);
+            }
             else
-                onScreenSurface.drawImage(tilesImage,261+(32*2),76,32,52,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,104);
+            {
+                if(!this.diveState || this.diveTimer != 0)
+                    onScreenSurface.drawImage(tilesImage,397-(32*(Math.floor(this.animationTimer/6)%5)),136,32,44,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,88);
+                else
+                    onScreenSurface.drawImage(tilesImage,397-(32*2),136,32,44,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,88);
+
+            }
         }
         else
         {
-            if(!this.diveState || this.diveTimer != 0)
-                onScreenSurface.drawImage(tilesImage,397-(32*(Math.floor(this.animationTimer/6)%5)),136,32,44,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,88);
-            else
-                onScreenSurface.drawImage(tilesImage,397-(32*2),136,32,44,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),64,88);
-
+            onScreenSurface.drawImage(tilesImage,428,88,22,31,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),44,62);
         }
     };
     return obj;
@@ -461,6 +482,7 @@ function projectile(x,y,dir)
                 if(roughCollision(this.coordinates[0],this.coordinates[1],30,30,currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w*2, tileList[currentRoom.static[i].tileNum].h*2))
                 {
                     character.projectiles.splice(character.projectiles.indexOf(this), 1);
+                    currentRoom.active.push(explosion(this.coordinates[0],this.coordinates[1]));
                     i =currentRoom.static.length;
                 }
             }
@@ -471,7 +493,10 @@ function projectile(x,y,dir)
            this.coordinates[0]-=5;
         this.ttl--;
         if(this.ttl < 0)
+        {
              character.projectiles.splice(character.projectiles.indexOf(this), 1);
+             currentRoom.active.push(explosion(this.coordinates[0],this.coordinates[1]));
+        }
 
     };
     obj.draw = function()
@@ -855,3 +880,23 @@ function levelBorders(obj)
     for(let i = 0;i<Math.ceil(obj.maxCamera[0]/5000);i++)
         obj.static.push(returnTile(0+(i*5000),obj.maxCamera[1]+50,12)); // bottom death plane
 }
+
+function explosion(x,y)
+{
+    let obj = {};
+    obj.coordinates = [x,y];
+    obj.ticks = 0;
+    obj.tick = function ()
+    {
+        this.ticks++;
+        if(this.ticks>30)
+            currentRoom.active.splice(currentRoom.active.indexOf(this), 1);
+    };
+    obj.draw = function ()
+    {
+        onScreenSurface.drawImage(explosionImage,Math.floor(this.ticks/3)*32,0,32,32,
+            Math.floor(this.coordinates[0]-(this.ticks/2)-camera.coordinates[0]),Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
+    };
+    return obj;
+}
+

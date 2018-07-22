@@ -99,7 +99,7 @@ function level0()
     obj.active.push(fallingPlatform(135, 645));
     
     //take me to level 2
-    obj.active.push(door(150, 400, 10, 100, 2, 770, 420));
+    //obj.active.push(door(150, 400, 10, 100, 2, 770, 420));
 
     if(!levelPreventSpawn[1])
         obj.active.push(healthPickup(710,920,1));

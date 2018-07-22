@@ -7,6 +7,7 @@ let BreakSFX= new Audio();
 let HealSFX= new Audio();
 let ShootSFX= new Audio();
 let SlimeSFX= new Audio();
+let BirdSFX= new Audio();
 let LevelTheme= new Audio();
 
 
@@ -21,5 +22,6 @@ BreakSFX.src = "sounds/Break.wav";
 HealSFX.src = "sounds/Heal.wav";
 ShootSFX.src = "sounds/Shoot.wav";
 SlimeSFX.src = "sounds/Slime.wav";
+BirdSFX.src = "sounds/Bird.mp3";
 LevelTheme.src = "sounds/Level.mp3";
 LevelTheme.loop = true;

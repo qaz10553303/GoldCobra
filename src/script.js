@@ -22,6 +22,10 @@ characterImage.src = "data/characters.png";
 let heartImage = new Image();//loading a spite sheet i downloaded
 heartImage.src = "data/hearts.png";
 
+let explosionImage = new Image();//loading a spite sheet i downloaded
+explosionImage.src = "data/explosion.png";
+
+
 
 let currentAnimationFrame;
 
@@ -83,8 +87,8 @@ function mainMenu()
     {
         LevelTheme.play();	
         character = createCharacter();
-		nextLevel(0,50,920);
-        //nextLevel(1,100,220);
+		//nextLevel(0,50,920);
+        nextLevel(1,100,220);
         window.cancelAnimationFrame(currentAnimationFrame);
 		currentAnimationFrame = window.requestAnimationFrame(gameLoop);
 	}
