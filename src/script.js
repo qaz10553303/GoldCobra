@@ -4,43 +4,40 @@ offScreenCanvas.height = '5000';
 var offScreenSurface = offScreenCanvas.getContext("2d");
 offScreenSurface.imageSmoothingEnabled = false;
 
-
 let onScreenCanvas = document.getElementById("bg");//getting canvas
 let onScreenSurface = onScreenCanvas.getContext("2d");//setting canvas for drawing
 onScreenSurface.imageSmoothingEnabled = false;
 
-
-let PowerUpImage = new Image();//everything else
+let PowerUpImage = new Image();//PowerUp graphics 
 PowerUpImage.src = "data/spriteSheet.png";
 
-let tilesImage = new Image();//background elements
+let tilesImage = new Image();//background and enemy elements
 tilesImage.src = "data/MainSpriteSheet.png";
 
-let characterImage = new Image();//loading a spite sheet i downloaded
+let characterImage = new Image();//character sprites
 characterImage.src = "data/characters.png";
 
-let heartImage = new Image();//loading a spite sheet i downloaded
+let heartImage = new Image();//used for health meter and health pickup
 heartImage.src = "data/hearts.png";
 
-let explosionImage = new Image();//loading a spite sheet i downloaded
+let explosionImage = new Image();//used for explosions when character projectiles die
 explosionImage.src = "data/explosion.png";
 
-
-
-let currentAnimationFrame;
+let currentAnimationFrame; // not used at the moment but can be used to stop animation
 
 let keysPressed = [];//an array that holds the keys currently down
 
 document.addEventListener("keydown",keyDownHandler,false);
 document.addEventListener("keyup",keyUpHandler,false);
 
-let camera = createCamera();
+let camera = createCamera(); 
 
-let character = createCharacter();//creates and holds character
-let tileList = [];//list of tiles and their locations and atributes
+let character = createCharacter();//creates variable to hold character needs to be created here because everything else references this
+let tileList = [];//list of tiles and their locations on the sprite sheet and atributes
 setTileList();//populates the list with hardcoded tile information
 
-let menuWait = 60;
+let waitTimer = 60; // prevents main menu from being skipped instantly by holding enter forces 1 second delay
+let messageState = false; // prevents game from updating while messages are displaying on screen 
 
 function keyDownHandler(e) //appends key to array if it is not already present
 {
@@ -58,55 +55,64 @@ window.onload = function() //this prevents game from starting before all assets 
     mainMenuBackground();
 };
 
-function mainMenuBackground()
+function mainMenuBackground() // generates main menu background
 {
     LevelTheme.pause();
     LevelTheme.currentTime = 0;
-    window.cancelAnimationFrame(currentAnimationFrame);
     nextLevel(0,0,700);
     generateRoomMap(0);
     generateBackground()
-    menuWait = 60;
+    waitTimer = 60;
     mainMenu();   
 }
 
-function mainMenu()
+function mainMenu() //main menu loop generates new character and map upon ending
 {
     drawBackground();
 	onScreenSurface.fillStyle = 'white';
-	onScreenSurface.font = "30px Courier New";
-	onScreenSurface.fillText("Game for class", 150, 260);
-    onScreenSurface.font = "20px Courier New";
-    if(Math.floor(menuWait/30)%2)
-        onScreenSurface.fillText("Press enter to play", 170, 360);
-    if(menuWait>-1000)
-        menuWait--;
-    if(menuWait<-950)
-        menuWait = 0;
-	if(keysPressed.includes(13) && menuWait< 5)
+	onScreenSurface.font = "bold 30px Courier New";
+	onScreenSurface.fillText("Adventure Quest", 150, 260);
+    onScreenSurface.font = "italic 15px Courier New";
+    if(Math.floor(waitTimer/30)%2)
+        onScreenSurface.fillText("Press enter to play", 210, 360);
+    waitTimer--;
+    if(waitTimer<-950)
+        waitTimer = 0;
+	if(keysPressed.includes(13) && waitTimer< 5)
     {
         LevelTheme.play();	
         character = createCharacter();
 		nextLevel(0,50,920);
-        //nextLevel(1,100,220);
-        window.cancelAnimationFrame(currentAnimationFrame);
+        //nextLevel(0,50,220);
+        messageSystem(" Welcome to The Tutorial -------------------------  Move your character    left and right with the         arrow keys                                   Jump with the up arrow                          The character hp is shown    in the top left                                 collect floating icons  for powerups and health ------------------------- Press Enter to Continue");
 		currentAnimationFrame = window.requestAnimationFrame(gameLoop);
 	}
 	else
 		currentAnimationFrame = window.requestAnimationFrame(mainMenu);
 }
 
-function gameLoop()
+function gameLoop() //main control loop
 {
-    render();
-    gameLogic();
-    if(!character.dead)
+
+    if(!messageState)
+    {
+        render();
+        gameLogic();
+    }
+    else
+       waitMessage();
+    
+    if(!character.dead || messageState)
         currentAnimationFrame = window.requestAnimationFrame(gameLoop);
+    else            
+        resetGame();
+
 }
 
 function render() //clears screen and draws all elements in turn
 {
     drawBackground();
+    drawUi();
     drawMain();
 }
 
@@ -131,17 +137,21 @@ function generateBackground()// draws background layer should only be called dur
 
 function drawMain() //draws all enemies player and interactive objects
 {
-    for(let i=0;i<Math.floor(character.health/2);i++) //draws full hearts ui
-        onScreenSurface.drawImage(heartImage,0,0,16,16,5+(35*i),5,16*2,16*2);
-    if(character.health%2 === 1) // draws half hearts for ui
-        onScreenSurface.drawImage(heartImage,0,15,16,16,5+(35*(Math.floor(character.health/2))),5,16*2,16*2);
-    for(let i=0;i<Math.ceil((character.maxHealth-character.health)/2)-character.health%2;i++) // draws empty hearts for ui
-        onScreenSurface.drawImage(heartImage,1,30,16,16,5+(35*(i+Math.ceil(character.health/2))),5,16*2,16*2);
     character.draw();
     for(let i = 0; i < currentRoom.active.length;i++)
         currentRoom.active[i].draw();
     for(let i = 0; i < character.projectiles.length;i++)
         character.projectiles[i].draw();
+}
+
+function drawUi() //draws hearts 
+{
+    for(let i=0;i<Math.floor(character.health/2);i++) //draws full hearts ui
+        onScreenSurface.drawImage(heartImage,0,0,16,16,5+(35*i),5,16*2,16*2);
+    if(character.health%2 === 1) // draws half hearts for ui
+        onScreenSurface.drawImage(heartImage,0,15,16,16,5+(35*(Math.floor(character.health/2))),5,16*2,16*2);
+    for(let i=0;i<Math.ceil((character.maxHealth-character.health)/2)-character.health%2;i++) // draws empty hearts for ui
+        onScreenSurface.drawImage(heartImage,1,30,16,16,5+(35*(i+Math.ceil(character.health/2))),5,16*2,16*2);   
 }
 
 function drawBackground() // draws UI ontop of everything else currently showing debug info
@@ -170,7 +180,7 @@ function userInputHandler() //accepts and applies player input
         character.projectileTap = true;
 }
 
-function gameLogic() //updates all game functions and ai
+function gameLogic() //updates all game functions and objects
 {
     for(let i = 0; i < character.projectiles.length;i++)
         character.projectiles[i].tick();
@@ -204,7 +214,6 @@ function roughCollision(x1,y1,w1,h1,x2,y2,w2,h2) //takes the x,y,width and heigh
     return (x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && h1 + y1 > y2);
 }
 
-
 function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to determine what vector to apply to character to move out of walls
 {
     let b_collision = y2+h2-y1;
@@ -212,9 +221,7 @@ function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to
     let l_collision = x1+w1-x2;
     let r_collision = x2+w2-x1;
 
-
-
-    if (t_collision < b_collision && t_collision < l_collision && t_collision < r_collision && character.moveVector[1]>0 )
+    if (t_collision < b_collision && t_collision < l_collision && t_collision < r_collision && character.moveVector[1]>=0 )
     {
         character.jump1 = true;
         if(character.jumpPowerup)
@@ -222,9 +229,9 @@ function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to
         if(character.dashCd < 0)
             character.dashGround = true;
         character.moveVector[1]  = 0;
-        character.coordinates[1]  -= t_collision-1;
+        character.coordinates[1]  -= t_collision;
     }
-    else if (b_collision < t_collision && b_collision < l_collision && b_collision < r_collision && character.moveVector[1]<0)
+    else if (b_collision < t_collision && b_collision < l_collision && b_collision < r_collision && character.moveVector[1]<=0)
     {
         character.moveVector[1]  = 0;
         character.coordinates[1]  += b_collision;
@@ -240,14 +247,15 @@ function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to
 
 }
 
-function resetGame()
+function resetGame() //retuns to main menu
 {
+    for(let i=0;i<levelPreventSpawn.length;i++)
+        levelPreventSpawn[i] = false;
     DeathSFX.play();
-    window.cancelAnimationFrame(currentAnimationFrame);
     mainMenuBackground();
 }
 
-function nextLevel(goto,x,y)
+function nextLevel(goto,x,y) //loads specified level at specified coordinates also sets player spawn and zeroes movement also makes sure camera starts in bounds
 {
     currentRoom = generateRoomMap(goto);
     character.coordinates[0] = x;
@@ -267,7 +275,7 @@ function nextLevel(goto,x,y)
     generateBackground();
 }
 
-function createCamera()
+function createCamera() // camera object behaves diferently from all other objects has no draw method
 {
 	let obj = {};
 	obj.coordinates = [0,0];
@@ -285,25 +293,32 @@ function createCamera()
 	return obj;
 }
 
-function messageSystem(message)
+function messageSystem(message) //generates and displays message
 {
-    window.cancelAnimationFrame(currentAnimationFrame);
+    messageState = true;
     let lines = [];
     for(let i =0;i<=Math.ceil(message.length/25);i++)
-        lines[i]= message.substring(i*25-25,i*25);
-    
+        lines[i] = message.substring(i*25-25,i*25);
+    waitTimer = 60;
+    onScreenSurface.strokeStyle = 'white';
+    onScreenSurface.lineJoin = "round";
+    onScreenSurface.lineWidth = 20;
+    onScreenSurface.strokeRect(206, 301-(lines.length*6), 236, (lines.length*12)-14);
+    onScreenSurface.strokeStyle = 'black';
     onScreenSurface.fillStyle = 'black';
-    onScreenSurface.fillRect(200,295-(lines.length*6),250,(lines.length*12));
-    
+    onScreenSurface.strokeRect(208, 303-(lines.length*6), 232, (lines.length*12)-18);
+    onScreenSurface.fillRect(208,303-(lines.length*6), 232, (lines.length*12)-18);
     onScreenSurface.fillStyle = 'white';
 	onScreenSurface.font = "15px Courier New";
     for(let i = 0;i<lines.length;i++)
         onScreenSurface.fillText(lines[i],205, 300 -(lines.length*6)+(12*i));
-    if(keysPressed.includes(13))
-    {
-        window.cancelAnimationFrame(currentAnimationFrame);
-		currentAnimationFrame = window.requestAnimationFrame(gameLoop);
-	}
-	else
-		currentAnimationFrame = window.requestAnimationFrame(messageSystem);
+}
+
+function waitMessage() //pauses game till message is recived
+{
+    waitTimer--;
+    if(waitTimer<-950)
+        waitTimer = 0;
+    if(keysPressed.includes(13) && waitTimer < 5)
+        messageState = false;
 }

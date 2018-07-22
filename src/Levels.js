@@ -1,4 +1,4 @@
-function setTileList()
+function setTileList() //really belongs in objects file but is here for refernece while building levels
 {
     tileList.push(tileInfo(0,0,256,32,0)); //skyTop top 0
     tileList.push(tileInfo(0,32,256,32,0)); //skyTop mid 1
@@ -22,7 +22,7 @@ function setTileList()
     tileList.push(tileInfo(32,672,16,16,1)); //grassFloat right 19
     tileList.push(tileInfo(48,672,16,16,1)); //grassFloat single 20
     tileList.push(tileInfo(0,747,16,16,1)); //ground left 21
-    tileList.push(tileInfo(16,747,16,16,1)); //ground Middle 22
+    tileList.push(tileInfo(16,747,16,16,2)); //ground Middle 22
     tileList.push(tileInfo(32,747,16,16,1)); //ground right 23
     tileList.push(tileInfo(48,747,16,16,1)); //ground single 24
     tileList.push(tileInfo(80,672,16,32,0)); //sunflower 25
@@ -72,7 +72,7 @@ function level0()
     platform(obj,630,850,6,17);
     ground(obj,730,958,4);
     platform(obj,220,550,11,17);
-    platform(obj,620,470,7,17);
+    platform(obj,620,480,7,17);
 
     
     obj.static.push(returnTile(200,530,35)); //enemy blocker
@@ -85,8 +85,8 @@ function level0()
     obj.static.push(returnTile(380,550,28)); //vine
     obj.static.push(returnTile(430,550,28)); //vine
     obj.static.push(returnTile(500,550,28)); //vine
-    obj.static.push(returnTile(650,470,28)); //vine
-    obj.static.push(returnTile(780,470,28)); //vine
+    obj.static.push(returnTile(650,480,28)); //vine
+    obj.static.push(returnTile(780,480,28)); //vine
 
 
     if(!levelPreventSpawn[0])
@@ -106,7 +106,7 @@ function level0()
 
     obj.active.push(door(800,750,10,100,1,10,805)); //door to level 1
     obj.active.push(door(800,875,10,100,1,10,915)); //door to level 1
-    obj.active.push(door(800,370,10,100,1,10,420)); //door to level 1
+    obj.active.push(door(800,380,10,100,1,10,430)); //door to level 1
 
     return obj;
 }
@@ -142,7 +142,7 @@ function level1()
     ground(obj,240,885,1);
     platform(obj,-10,850,6,17);
     ground(obj,-10,958,18);
-    platform(obj,-10,470,4,17);
+    platform(obj,-10,480,4,17);
     ground(obj,800,785,10);
     ground(obj,1318,735,10);
     castle(obj,1637,735,12,9);
@@ -166,7 +166,7 @@ function level1()
     obj.static.push(returnTile(680,415,28)); //vine
     obj.static.push(returnTile(750,415,28)); //vine
     obj.static.push(returnTile(830,415,28)); //vine
-    obj.static.push(returnTile(30,470,28)); //vine
+    obj.static.push(returnTile(30,480,28)); //vine
     obj.static.push(returnTile(1770,595,36)); //torch
     obj.static.push(returnTile(1850,595,36)); //torch
     obj.static.push(returnTile(1930,595,36)); //torch
@@ -189,14 +189,11 @@ function level1()
     obj.static.push(returnTile(570,195,35)); //enemy blocker
     obj.static.push(returnTile(945,195,35)); // enemy blocker
 
-    //obj.static.push(returnTile(570,395,35)); //enemy blocker
-    //obj.static.push(returnTile(945,395,35)); // enemy blocker
     obj.static.push(returnTile(780,765,35)); //enemy blocker
     obj.static.push(returnTile(1113,765,35)); // enemy blocker
 
     
     obj.active.push(bird(600,183));
-    //obj.active.push(slime(600,383));
     obj.active.push(slime(900,753));
 
     if(!levelPreventSpawn[2])
@@ -207,7 +204,7 @@ function level1()
     
     obj.active.push(door(0,750,10,100,0,770,805)); //door to level 0
     obj.active.push(door(0,875,10,100,0,770,915)); //door to level 0
-    obj.active.push(door(0,370,10,100,0,770,420)); //door to level 0
+    obj.active.push(door(0,380,10,100,0,770,430)); //door to level 0
 
     return obj;
 }

@@ -1,3 +1,4 @@
+//**************************** GAME OBJECTS **************************************
 function createCharacter() //generates and contains game character
 {
     let obj = {};
@@ -5,10 +6,10 @@ function createCharacter() //generates and contains game character
     obj.moveVector = [0,0]; // character movement vector
     obj.sprite = [0,0,30,46];
     
-    obj.jump1 = true;
+    obj.jump1 = false;
     obj.jump2 = false;
     obj.jumpPowerup = false;
-    obj.jumpTap = true;
+    obj.jumpTap = false;
         
     obj.dashPowerup = false;
     obj.dashTap = false;
@@ -52,13 +53,13 @@ function createCharacter() //generates and contains game character
             DashSFX.play();
             this.dashTap = false;
             this.dashGround = false;
-            this.moveVector[0] += 20*Math.sign(this.state);
+            this.moveVector[0] += 40*Math.sign(this.state);
 
         }
                          
     };
     
-      obj.hurt = function()
+    obj.hurt = function()
     {
         if(this.iFrames <= 0)
         {
@@ -67,56 +68,22 @@ function createCharacter() //generates and contains game character
         }
     };
     
-    obj.shoot = function()
+    obj.updateTimers = function()
     {
-        if(this.projectileTap && this.projectilePowerup)
+        if(this.health<1)
         {
-            this.projectiles.push(projectile(this.coordinates[0],this.coordinates[1],this.state));
-            this.projectileTap = false;
-        }
-                         
-    };
-    
-    obj.tick = function ()
-    {
-        if(this.dead)//death handler
-            resetGame();
-        else if(this.health<1)
-        {
-            messageSystem("       You Are Dead        Press Enter to continue");
             this.dead = true;
+            messageSystem("       You Are Dead        Press Enter to continue");
         }
-        
-        userInputHandler();//user input 
-        
-        if (this.moveVector[1] == 0 && this.moveVector[0] != 0)//player animation handler
-            this.state = 1;
-        else if (this.moveVector[1] > 0 && this.moveVector[0] != 0)
-             this.state = 2;
-        else if (this.moveVector[1] < 0 && this.moveVector[0] != 0)
-             this.state = 3; 
-        if(this.moveVector[0] < 0)
-            this.state = this.state*(-1);
-        if(this.moveVector[0] != 0)
-            this.animationFrame ++;
-        if(this.animationFrame > 10000)
-            this.animationFrame = 1;
-        
-        this.coordinates[0] += this.moveVector[0];//physics handler
-        this.coordinates[1] += this.moveVector[1];
-        this.moveVector[0] = this.moveVector[0]*0.8; //friction
-        if(Math.abs(this.moveVector[0])<0.1) //friction
-            this.moveVector[0] = 0;
-        this.moveVector[1] += 0.1; //gravity
-	    if(this.moveVector[1]>5)
-            this.moveVector[1] = 5; //gravity
-
         if(this.dashCd >= 0) //dash timer
             this.dashCd--;
         if(this.iFrames > 0) //invincibility frame timer
             this.iFrames--;
         this.jump1 = false; //prevents using first jump after leaving platform
-        
+    };
+
+    obj.applyCollision = function()
+    {
         for (let i= 0; i<currentRoom.static.length; i++)//handles all collision with static objects
         {
             if(tileList[currentRoom.static[i].tileNum].passable > 0)//ignores background elemnts and enemy blockers
@@ -135,15 +102,65 @@ function createCharacter() //generates and contains game character
                     }
 
                 }
-        }
+        } 
+    };
+    
+    obj.animationSystem = function()
+    {
+        if (this.moveVector[1] == 0 && this.moveVector[0] != 0)//player animation handler
+            this.state = 1;
+        else if (this.moveVector[1] > 0 && this.moveVector[0] != 0)
+             this.state = 2;
+        else if (this.moveVector[1] < 0 && this.moveVector[0] != 0)
+             this.state = 3; 
+        if(this.moveVector[0] < 0)
+            this.state = this.state*(-1);
+        if(this.moveVector[0] != 0)
+            this.animationFrame ++;
+        if(this.animationFrame > 10000)
+            this.animationFrame = 1;
+    };
 
+    
+    obj.shoot = function()
+    {
+        if(this.projectileTap && this.projectilePowerup)
+        {
+            this.projectiles.push(projectile(this.coordinates[0],this.coordinates[1],this.state));
+            this.projectileTap = false;
+        }
+    };
+    
+    obj.applyPhysics = function()
+    {
+        this.moveVector[0] = this.moveVector[0]*0.8; //friction
+        if(Math.abs(this.moveVector[0])<0.1) //friction
+            this.moveVector[0] = 0;
+        this.moveVector[1] += 0.1; //gravity
+	    if(this.moveVector[1]>5)
+            this.moveVector[1] = 5; //gravity
+    };
+    
+    obj.applyMovement = function()
+    {
+        this.coordinates[0] += this.moveVector[0]/2;
+        this.coordinates[1] += this.moveVector[1]/2;
+    };
+    
+    obj.tick = function ()
+    {
+        this.applyMovement(); //i am applying the movement vector in 2 half steps and checking collision after each to attemp to reduce tunneling
+        this.applyCollision();
+        userInputHandler();//user input 
+        this.updateTimers();
+        this.animationSystem();
+        this.applyPhysics();
+        this.applyMovement(); 
+        this.applyCollision();
     };
     obj.draw = function()
     {
         
-        /*onScreenSurface.font = "20px Courier New";
-        onScreenSurface.fillStyle = 'White';
-        onScreenSurface.fillText(this.coordinates.toString(),70,70);//Debug info */
 
         if(this.iFrames%2 == 0) //strobes player for invincibility frames
         {
@@ -182,7 +199,7 @@ function createCharacter() //generates and contains game character
     return (obj);
 }
 
-function door(x,y,w,h,level,cx,cy)
+function door(x,y,w,h,level,cx,cy) // x,y location    width,height of door   destination level      destination x,y
 {
     let obj = {};
     obj.coordinates = [x,y,w,h];
@@ -201,7 +218,7 @@ function door(x,y,w,h,level,cx,cy)
     return obj;
 }
 
-function breakable(x,y,num)
+function breakable(x,y,num) // i am still unsure if breakable walls need a num variable to prevent them from respawning, this is a design issue not a programming one
 {
     let obj = {};
     obj.coordinates = [x,y];
@@ -506,7 +523,7 @@ function projectile(x,y,dir)
     return obj;
 }
 
-function movingPlatform(x,y,length,type,x2,y2)
+function movingPlatform(x,y,length,type,x2,y2)// x,y start coordinates ,     length of platform  ,   graphic to use for platform   ,     end of path x,y
 {
     let obj = {};
     obj.coordinates = [x,y];
@@ -787,6 +804,80 @@ function healthPickup(x,y,num)
     return obj;
 }
 
+function explosion(x,y)
+{
+    let obj = {};
+    obj.coordinates = [x,y];
+    obj.ticks = 0;
+    obj.tick = function ()
+    {
+        this.ticks++;
+        if(this.ticks>30)
+            currentRoom.active.splice(currentRoom.active.indexOf(this), 1);
+    };
+    obj.draw = function ()
+    {
+        onScreenSurface.drawImage(explosionImage,Math.floor(this.ticks/3)*32,0,32,32,
+            Math.floor(this.coordinates[0]-(this.ticks/2)-camera.coordinates[0]),Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
+    };
+    return obj;
+}
+
+// ************** BELOW THIS POINT ARE SETUP METHODS FOR GENERATING LEVELS ******************
+function ground(obj,x,y,length)  //object reference , x,ytop left corner  ,    length of ground
+{
+    let height = Math.ceil((obj.maxCamera[1]-y)/32);
+    platform(obj,x,y,length,13);
+    for(let i =1;i<height;i++)
+        platform(obj,x,y+(32*i),length,21);
+}
+
+function castle(obj,x,y,length,height) //object reference , x,ytop left corner,  length castle ,height of castle
+{
+    for(let i =0;i<height;i++)
+        platform(obj,x,y+(32*i),length,30);
+}
+
+function sky(obj)
+{
+    let num = Math.ceil(obj.maxCamera[0]/512);
+    let num2 = Math.ceil(obj.maxCamera[1]/64);
+
+    for(let i = 0;i<num;i++)
+        obj.static.push(returnTile(512*i,0,0));
+    for(let i = 0;i<Math.ceil(((num2-3)*num)/2);i++)
+        obj.static.push(returnTile((i%num)*512,64+(Math.floor(i/num)*64),1));
+    for(let i = 0;i<num;i++)
+        obj.static.push(returnTile(512*i,64+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64),2));
+    for(let i = 0;i<num;i++)
+        obj.static.push(returnTile(512*i,128+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64),3));
+    for(let i = 0;i<num;i++)
+        obj.static.push(returnTile(512*i,192+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64),4));
+    for(let i = 0;i<num;i++)
+        obj.static.push(returnTile(512*i,256+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64),5));
+    for(let i = 0;i<Math.ceil(((num2-3)*num)/2);i++)
+        obj.static.push(returnTile((i%num)*512,320+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64)+(Math.floor(i/num)*52),6));
+}
+
+function castleBack(obj,x,y,w,h) //object reference , x,ytop left corner,  length castle background ,height of castle background
+{ 
+    for(let i = 0;i<w;i++)
+        for(let q = 0;q<h;q++)
+            obj.static.push(returnTile(x+(i*64),y+(q*56),34));
+}
+
+function levelBorders(obj) //applys blockers to left right and top of level and a death plane to the bottom
+{
+    for(let i = 0;i<Math.ceil(obj.maxCamera[1]/5000);i++)
+        obj.static.push(returnTile(-20,0+(i*5000),10)); // left blocker
+    for(let i = 0;i<Math.ceil(obj.maxCamera[1]/5000);i++)
+        obj.static.push(returnTile(obj.maxCamera[0],0+(i*5000),10)); // right blocker
+    for(let i = 0;i<Math.ceil(obj.maxCamera[0]/5000);i++)
+        obj.static.push(returnTile(0+(i*5000),-20,11)); // top blocker
+    for(let i = 0;i<Math.ceil(obj.maxCamera[0]/5000);i++)
+        obj.static.push(returnTile(0+(i*5000),obj.maxCamera[1]+50,12)); // bottom death plane
+}
+
 function returnTile(x,y,tileNum)
 {
     let obj = {};
@@ -814,7 +905,7 @@ function tree(obj,x,y)
     obj.static.push(returnTile(x+20,y+126,9));
 }
 
-function platform(obj,x,y,length,type)
+function platform(obj,x,y,length,type) //object reference , x,ytop left corner  ,   length of platform  , type of platform
 {
     if (length > 1)
     {
@@ -825,78 +916,5 @@ function platform(obj,x,y,length,type)
     }
     else
         obj.static.push(returnTile(x,y,type+3));    
-}
-
-function ground(obj,x,y,length)
-{
-    let height = Math.ceil((obj.maxCamera[1]-y)/32);
-    platform(obj,x,y,length,13);
-    for(let i =1;i<height;i++)
-        platform(obj,x,y+(32*i),length,21);
-}
-
-function castle(obj,x,y,length,height)
-{
-    for(let i =0;i<height;i++)
-        platform(obj,x,y+(32*i),length,30);
-}
-
-function sky(obj)
-{
-    let num = Math.ceil(obj.maxCamera[0]/512);
-    let num2 = Math.ceil(obj.maxCamera[1]/64);
-
-    for(let i = 0;i<num;i++)
-        obj.static.push(returnTile(512*i,0,0));
-    for(let i = 0;i<Math.ceil(((num2-3)*num)/2);i++)
-        obj.static.push(returnTile((i%num)*512,64+(Math.floor(i/num)*64),1));
-    for(let i = 0;i<num;i++)
-        obj.static.push(returnTile(512*i,64+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64),2));
-    for(let i = 0;i<num;i++)
-        obj.static.push(returnTile(512*i,128+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64),3));
-    for(let i = 0;i<num;i++)
-        obj.static.push(returnTile(512*i,192+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64),4));
-    for(let i = 0;i<num;i++)
-        obj.static.push(returnTile(512*i,256+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64),5));
-    for(let i = 0;i<Math.ceil(((num2-3)*num)/2);i++)
-        obj.static.push(returnTile((i%num)*512,320+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64)+(Math.floor(i/num)*52),6));
-}
-
-function castleBack(obj,x,y,w,h)
-{ 
-    for(let i = 0;i<w;i++)
-        for(let q = 0;q<h;q++)
-            obj.static.push(returnTile(x+(i*64),y+(q*56),34));
-}
-
-function levelBorders(obj)
-{
-    for(let i = 0;i<Math.ceil(obj.maxCamera[1]/5000);i++)
-        obj.static.push(returnTile(-20,0+(i*5000),10)); // left blocker
-    for(let i = 0;i<Math.ceil(obj.maxCamera[1]/5000);i++)
-        obj.static.push(returnTile(obj.maxCamera[0],0+(i*5000),10)); // right blocker
-    for(let i = 0;i<Math.ceil(obj.maxCamera[0]/5000);i++)
-        obj.static.push(returnTile(0+(i*5000),-20,11)); // top blocker
-    for(let i = 0;i<Math.ceil(obj.maxCamera[0]/5000);i++)
-        obj.static.push(returnTile(0+(i*5000),obj.maxCamera[1]+50,12)); // bottom death plane
-}
-
-function explosion(x,y)
-{
-    let obj = {};
-    obj.coordinates = [x,y];
-    obj.ticks = 0;
-    obj.tick = function ()
-    {
-        this.ticks++;
-        if(this.ticks>30)
-            currentRoom.active.splice(currentRoom.active.indexOf(this), 1);
-    };
-    obj.draw = function ()
-    {
-        onScreenSurface.drawImage(explosionImage,Math.floor(this.ticks/3)*32,0,32,32,
-            Math.floor(this.coordinates[0]-(this.ticks/2)-camera.coordinates[0]),Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
-    };
-    return obj;
 }
 
