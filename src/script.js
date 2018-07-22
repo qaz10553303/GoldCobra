@@ -87,8 +87,8 @@ function mainMenu()
     {
         LevelTheme.play();	
         character = createCharacter();
-		//nextLevel(0,50,920);
-        nextLevel(1,100,220);
+		nextLevel(0,50,920);
+        //nextLevel(1,100,220);
         window.cancelAnimationFrame(currentAnimationFrame);
 		currentAnimationFrame = window.requestAnimationFrame(gameLoop);
 	}
