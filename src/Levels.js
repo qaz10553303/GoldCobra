@@ -30,13 +30,16 @@ function setTileList() //really belongs in objects file but is here for refernec
     tileList.push(tileInfo(64,688,16,16,0)); //smallpink flower27
     tileList.push(tileInfo(81,495,14,32,0)); //vines 28
     tileList.push(tileInfo(128,704,32,16,0)); //rocks 29
-    tileList.push(tileInfo(0,639,16,16,1)); //castleMid left 30
-    tileList.push(tileInfo(16,639,16,16,1)); //castleMid Middle 31
-    tileList.push(tileInfo(32,639,16,16,1)); //castleMid right 32
-    tileList.push(tileInfo(48,639,16,16,1)); //castleMid single 33
-    tileList.push(tileInfo(64,628,32,28,0)); //castleTop background 34
+    tileList.push(tileInfo(0,592,16,16,1)); //castleMid left 30
+    tileList.push(tileInfo(16,592,16,16,1)); //castleMid Middle 31
+    tileList.push(tileInfo(32,592,16,16,1)); //castleMid right 32
+    tileList.push(tileInfo(48,592,16,16,1)); //castleMid single 33
+    tileList.push(tileInfo(64,624,32,32,0)); //castleBack light 34
     tileList.push(tileInfo(174,243,10,10,-1)); //enemy Blocker 35
     tileList.push(tileInfo(112,624,16,16,0)); //torch 36
+    tileList.push(tileInfo(96,624,16,32,0)); //castleBack dark 37
+    tileList.push(tileInfo(64,592,60,32,0)); //castleBack holes1 38
+    tileList.push(tileInfo(124,592,68,32,0)); //castleBack holes2 39
 }
 
 levelPreventSpawn=[false,false,false,false]
@@ -120,7 +123,10 @@ function level1()
     
     sky(obj);
     levelBorders(obj);
-    castleBack(obj,1639,170,10,20);
+    castleBackLight(obj,1650,429,7,2);
+    castleBackHoles(obj,1650,173,2,4);
+    castleBackDark(obj,1670,536,14,8);
+    castleBackHoles(obj,1650,173,2,4);
 
     
     tree(obj,320,800);
@@ -148,11 +154,7 @@ function level1()
     castle(obj,1637,735,12,9);
     castle(obj,1637,170,2,15);
     castle(obj,1637,505,12,1);
-    castle(obj,1637,473,4,1);
-    castle(obj,1637,332,3,1);
-    castle(obj,1800,300,7,1);
-    castle(obj,1800,300,1,4);
-    castle(obj,1768,396,1,1);
+    castle(obj,1860,330,5,1);
     castle(obj,1637,108,12,2);
     castle(obj,1637,44,2,2);
     castle(obj,1733,44,2,2);
@@ -167,15 +169,16 @@ function level1()
     obj.static.push(returnTile(750,415,28)); //vine
     obj.static.push(returnTile(830,415,28)); //vine
     obj.static.push(returnTile(30,480,28)); //vine
-    obj.static.push(returnTile(1770,595,36)); //torch
-    obj.static.push(returnTile(1850,595,36)); //torch
-    obj.static.push(returnTile(1930,595,36)); //torch
+    obj.static.push(returnTile(1765,225,36)); //torch
+    obj.static.push(returnTile(1850,395,36)); //torch
+    obj.static.push(returnTile(1930,195,36)); //torch
 
 
-    obj.active.push(fallingPlatform(1150,775));
-    obj.active.push(fallingPlatform(1250,745));
     obj.active.push(movingPlatform(600,950,2,17,690,785));
     obj.active.push(movingPlatform(1468,700,2,17,1468,470));
+    obj.active.push(movingPlatform(1701,330,3,30,1701,470));
+    obj.active.push(fallingPlatform(1150,775));
+    obj.active.push(fallingPlatform(1250,745));
     obj.active.push(fallingPlatform(1400,475));
     obj.active.push(fallingPlatform(1310,455));
     obj.active.push(fallingPlatform(1220,435));
@@ -205,6 +208,7 @@ function level1()
     obj.active.push(door(0,750,10,100,0,770,805)); //door to level 0
     obj.active.push(door(0,875,10,100,0,770,915)); //door to level 0
     obj.active.push(door(0,380,10,100,0,770,430)); //door to level 0
+    obj.active.push(door(1990,600,10,130,2,0,600)); //door to level 2
 
     return obj;
 }
@@ -218,7 +222,7 @@ function level2()
 
     sky(obj);
     levelBorders(obj);
-    castleBack(obj, 1639, 170, 10, 20);
+    //castleBack(obj, 1639, 170, 10, 20);
 
 
     tree(obj, 320, 800);

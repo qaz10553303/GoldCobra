@@ -26,7 +26,7 @@ function createCharacter() //generates and contains game character
     obj.dead = false;
 
     obj.projectiles = [];
-    obj.projectilePowerup = false;
+    obj.projectilePowerup = true;
     obj.projectileTap = false;
     
     obj.iFrames = 0;
@@ -149,6 +149,7 @@ function createCharacter() //generates and contains game character
     
     obj.tick = function ()
     {
+        this.jump2 = true;
         this.applyMovement(); //i am applying the movement vector in 2 half steps and checking collision after each to attemp to reduce tunneling
         this.applyCollision();
         userInputHandler();//user input 
@@ -160,7 +161,10 @@ function createCharacter() //generates and contains game character
     };
     obj.draw = function()
     {
-        
+        onScreenSurface.fillStyle = 'white';
+        onScreenSurface.font = "20px Courier New";
+        onScreenSurface.fillText(this.coordinates[0].toString(), 70, 70);
+        onScreenSurface.fillText(this.coordinates[1].toString(), 70, 100);
 
         if(this.iFrames%2 == 0) //strobes player for invincibility frames
         {
@@ -859,11 +863,38 @@ function sky(obj)
         obj.static.push(returnTile((i%num)*512,320+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64)+(Math.floor(i/num)*52),6));
 }
 
-function castleBack(obj,x,y,w,h) //object reference , x,ytop left corner,  length castle background ,height of castle background
+function castleBackLight(obj,x,y,w,h) //object reference , x,ytop left corner,  length castle background ,height of castle background
+{ 
+    y=(y+((h-1)*50)-(h*64))
+    for(let i = 0;i<w;i++)
+        for(let q = 0;q<h;q++)
+            obj.static.push(returnTile(x+(i*64),y+(h*64)-(q*50),34));
+}
+
+function castleBackDark(obj,x,y,w,h) //object reference , x,ytop left corner,  length castle background ,height of castle background
+{ 
+    y=(y+((h-1)*50)-(h*64))
+    for(let i = 0;i<w;i++)
+        for(let q = 0;q<h;q++)
+            obj.static.push(returnTile(x+(i*32),y+(h*64)-(q*50),37));
+}
+
+function castleBackHoles(obj,x,y,w,h) //object reference , x,ytop left corner,  length castle background ,height of castle background
 { 
     for(let i = 0;i<w;i++)
         for(let q = 0;q<h;q++)
-            obj.static.push(returnTile(x+(i*64),y+(q*56),34));
+        {
+            if(q%2 == 0)
+            {
+                obj.static.push(returnTile(x+(i*256),y+(q*64),38));
+                obj.static.push(returnTile(x+120+(i*256),y+(q*64),39));
+            }
+            else
+            {
+                obj.static.push(returnTile(x+(i*256),y+(q*64),39));
+                obj.static.push(returnTile(x+136+(i*256),y+(q*64),38));
+            }
+        }
 }
 
 function levelBorders(obj) //applys blockers to left right and top of level and a death plane to the bottom

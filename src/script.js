@@ -82,8 +82,8 @@ function mainMenu() //main menu loop generates new character and map upon ending
     {
         LevelTheme.play();	
         character = createCharacter();
-		nextLevel(0,50,920);
-        //nextLevel(0,50,220);
+		//nextLevel(0,50,920);
+        nextLevel(1,1770,220);
         messageSystem(" Welcome to The Tutorial -------------------------  Move your character    left and right with the         arrow keys                                   Jump with the up arrow                          The character hp is shown    in the top left                                 collect floating icons  for powerups and health ------------------------- Press Enter to Continue");
 		currentAnimationFrame = window.requestAnimationFrame(gameLoop);
 	}
