@@ -11,7 +11,7 @@ function createCharacter() //generates and contains game character
     obj.jumpPowerup = false;
     obj.jumpTap = false;
         
-    obj.dashPowerup = false;
+    obj.dashPowerup = true;
     obj.dashTap = false;
     obj.dashGround = false;
     obj.dashCd = 0;
@@ -30,21 +30,40 @@ function createCharacter() //generates and contains game character
     obj.projectileTap = false;
     
     obj.iFrames = 0;
+    obj.ladder = false;
+    obj.ladderDir = 0;
     
     obj.jump = function()
     {
         if((this.jump1 && this.jumpTap) || (this.jump2 && this.jumpTap))
         {
+            this.ladderDir = -1;
             this.moveVector[1] = -4;
+            if(this.ladder)
+                this.moveVector[1] = -2;
             this.jumpCharges--;
-            if(this.jump1)
-                this.jump1 =false;
-            else
-                this.jump2 =false;
-            JumpSFX.play();
-            this.jumpTap = false;
+            if(!this.ladder)
+            {
+                if(this.jump1)
+                    this.jump1 =false;
+                else
+                    this.jump2 =false;
+                if(!this.ladder)
+                JumpSFX.play();
+                this.jumpTap = false;
+            }
         }
     };
+    
+    obj.grounded = function()
+    {
+        character.jump1 = true;
+        if(character.jumpPowerup || this.ladder)
+            character.jump2 = true;
+        if(character.dashCd < 0)
+            character.dashGround = true;
+    }
+    
     obj.dash = function()
     {
         if(this.dashTap && this.dashPowerup && this.dashGround && this.dashCd < 0)
@@ -68,6 +87,13 @@ function createCharacter() //generates and contains game character
         }
     };
     
+    obj.respawn = function()
+    {
+            FallSFX.play();
+            character.hurt();
+            character.coordinates = [character.respawnLocation[0],character.respawnLocation[1]];
+    };
+    
     obj.updateTimers = function()
     {
         if(this.health<1)
@@ -80,6 +106,9 @@ function createCharacter() //generates and contains game character
         if(this.iFrames > 0) //invincibility frame timer
             this.iFrames--;
         this.jump1 = false; //prevents using first jump after leaving platform
+        this.ladder = false;
+        this.ladderDir = 0;
+        this.ladderTop = false;
     };
 
     obj.applyCollision = function()
@@ -95,9 +124,13 @@ function createCharacter() //generates and contains game character
                         fineCollision(this.coordinates[0],this.coordinates[1],this.sprite[2],this.sprite[3],currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w*2, tileList[currentRoom.static[i].tileNum].h*2);
                         break;
                     case 2:
-                        this.hurt();
-                        this.coordinates = [this.respawnLocation[0],this.respawnLocation[1]];
-                        FallSFX.play();
+                        this.respawn();
+                        break;
+                    case 3:
+                        this.ladder = true;
+                        this.jumpTap = true;
+                        this.grounded();
+                        this.moveVector[1] = 0; //gravity
                         break;
                     }
 
@@ -115,13 +148,19 @@ function createCharacter() //generates and contains game character
              this.state = 3; 
         if(this.moveVector[0] < 0)
             this.state = this.state*(-1);
-        if(this.moveVector[0] != 0)
+        if(this.moveVector[0] != 0 || this.ladderDir != 0)
             this.animationFrame ++;
         if(this.animationFrame > 10000)
             this.animationFrame = 1;
+        if(this.ladder)
+        {
+            this.state = 4*this.ladderDir;
+            if(this.ladderDir == 0)
+                this.state = 4;
+        }
+
     };
 
-    
     obj.shoot = function()
     {
         if(this.projectileTap && this.projectilePowerup)
@@ -136,7 +175,8 @@ function createCharacter() //generates and contains game character
         this.moveVector[0] = this.moveVector[0]*0.8; //friction
         if(Math.abs(this.moveVector[0])<0.1) //friction
             this.moveVector[0] = 0;
-        this.moveVector[1] += 0.1; //gravity
+        if(!this.ladder)
+            this.moveVector[1] += 0.1; //gravity
 	    if(this.moveVector[1]>5)
             this.moveVector[1] = 5; //gravity
     };
@@ -153,18 +193,19 @@ function createCharacter() //generates and contains game character
         this.applyMovement(); //i am applying the movement vector in 2 half steps and checking collision after each to attemp to reduce tunneling
         this.applyCollision();
         userInputHandler();//user input 
-        this.updateTimers();
         this.animationSystem();
         this.applyPhysics();
+        this.updateTimers();
         this.applyMovement(); 
         this.applyCollision();
+
     };
     obj.draw = function()
     {
-        onScreenSurface.fillStyle = 'white';
-        onScreenSurface.font = "20px Courier New";
-        onScreenSurface.fillText(this.coordinates[0].toString(), 70, 70);
-        onScreenSurface.fillText(this.coordinates[1].toString(), 70, 100);
+        //onScreenSurface.fillStyle = 'white';
+        //onScreenSurface.font = "20px Courier New";
+        //onScreenSurface.fillText(this.coordinates[0].toString(), 70, 70);
+        //onScreenSurface.fillText(this.coordinates[1].toString(), 70, 100);
 
         if(this.iFrames%2 == 0) //strobes player for invincibility frames
         {
@@ -198,6 +239,16 @@ function createCharacter() //generates and contains game character
                         Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),character.sprite[2],character.sprite[3]);
 
             }
+            else if (Math.abs(this.state) == 4)// in the air moving down
+            {
+                if(this.state > 0) // down
+                    onScreenSurface.drawImage(characterImage, 9+(32*(19+((Math.floor(this.animationFrame/10))%4))), 41, 15 ,23,
+                        Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),character.sprite[2],character.sprite[3]);
+                else // up          
+                    onScreenSurface.drawImage(characterImage, 9+(32*(22-((Math.floor(this.animationFrame/10))%4))), 41, 15 ,23,
+                        Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),character.sprite[2],character.sprite[3]);
+            }
+
         }
     };
     return (obj);
@@ -258,7 +309,7 @@ function slime(x,y)
     obj.coordinates = [x,y];
     obj.direction = true;
     obj.bounceAngle = 0;
-    obj.animationTimer = 0;
+    obj.animationTimer = Math.floor(Math.random()*60);
     obj.dead = false;
     obj.tick = function()
     {
@@ -343,7 +394,7 @@ function bird(x,y)
     obj.direction = true;
     obj.visualState = true;
     obj.diveTimer = 0;
-    obj.characterDistance = 250;
+    obj.characterDistance = 500;
     obj.bounceAngle = 0;
     obj.diveAngle = 0;
     obj.animationTimer = 0;
@@ -380,7 +431,7 @@ function bird(x,y)
             {
                 this.coordinates[0] += 3*Math.sin(this.diveAngle);
                 this.coordinates[1] += 3*Math.cos(this.diveAngle);
-                if((Math.abs(this.coordinates[1]-this.targetCoordinates[1]) <=3))
+                if((Math.abs(this.coordinates[1]-this.targetCoordinates[1]) <=3) || (Math.abs(this.coordinates[0]-this.targetCoordinates[0]) <=3))
                 {
                     this.diveTimer++;
                 }
@@ -405,7 +456,6 @@ function bird(x,y)
                 if(Math.abs(this.coordinates[1] - this.returnCoordinates[1]) <=3)
                 {
                     this.diveState = false;
-                    this.direction = this.visualState;
                     this.characterDistance = Math.sqrt(Math.pow(((character.coordinates[0]+15)-(this.coordinates[0]+32)),2)
                         +Math.pow(((character.coordinates[1]+23)-(this.coordinates[1]+32)),2));
                 }
@@ -599,11 +649,13 @@ function movingPlatform(x,y,length,type,x2,y2)// x,y start coordinates ,     len
    
 }
 
-function fallingPlatform(x,y)
+function fallingPlatform(x,y,time,type)
 {
     let obj = {};
     obj.coordinates = [x,y];
-    obj.start = [x,y];    
+    obj.start = [x,y];
+    obj.time = time;
+    obj.type = type;
     obj.timer = -1;
     
     obj.tick = function()
@@ -613,14 +665,14 @@ function fallingPlatform(x,y)
         
         if(this.timer < 20)
             {}
-        else if (this.timer < 130)
+        else if (this.timer < 20+time)
         {
             if(Math.floor(this.timer/3)%2)
                 this.coordinates[1] +=1;
             else
                 this.coordinates[1] -=1;
         }
-        else if(this.timer < 300)
+        else if(this.timer < time+190)
         {
             this.coordinates[1] +=5;
             if(this.timer == 130)
@@ -644,7 +696,10 @@ function fallingPlatform(x,y)
     };
     obj.draw = function()
     {
-        onScreenSurface.drawImage(tilesImage,48,672,16,16,Math.floor(this.coordinates[0]-camera.coordinates[0]),Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
+        if(type == 1)
+            onScreenSurface.drawImage(tilesImage,48,672,16,16,Math.floor(this.coordinates[0]-camera.coordinates[0]),Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
+        if(type == 2)
+            onScreenSurface.drawImage(tilesImage,48,592,16,16,Math.floor(this.coordinates[0]-camera.coordinates[0]),Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
     };
     return obj;
 }
@@ -947,5 +1002,22 @@ function platform(obj,x,y,length,type) //object reference , x,ytop left corner  
     }
     else
         obj.static.push(returnTile(x,y,type+3));    
+}
+
+function ladder(obj,x,y,height,type)
+{
+    if(type == 1)
+        for(let i = 0;i<height;i++)
+        {
+            obj.static.push(returnTile(x,y+(i*64),40)); //ladder visual
+            obj.static.push(returnTile(x+16,y+16+(i*64),41)); //ladder climbable
+        }
+    if(type == 2)
+        for(let i = 0;i<height;i++)
+        {
+            obj.static.push(returnTile(x,y+(i*32),42)); //ladder visual
+            if(i%2 == 0)
+                obj.static.push(returnTile(x+16,y+16+(i*32),41)); //ladder climbable
+        }
 }
 

@@ -40,9 +40,13 @@ function setTileList() //really belongs in objects file but is here for refernec
     tileList.push(tileInfo(96,624,16,32,0)); //castleBack dark 37
     tileList.push(tileInfo(64,592,60,32,0)); //castleBack holes1 38
     tileList.push(tileInfo(124,592,68,32,0)); //castleBack holes2 39
+    tileList.push(tileInfo(192,752,16,32,0)); //ladder visual 40
+    tileList.push(tileInfo(174,243,1,10,3)); //ladder climbable 41
+    tileList.push(tileInfo(193,736,16,16,0)); //rope visual 41
+
 }
 
-levelPreventSpawn=[false,false,false,false]
+levelPreventSpawn=[false,false,false,false,false]
 
 function level0()
 {
@@ -98,8 +102,8 @@ function level0()
     obj.active.push(movingPlatform(380,800,2,17,380,950));
     obj.active.push(slime(380, 518));
 
-    obj.active.push(fallingPlatform(175, 595));
-    obj.active.push(fallingPlatform(135, 645));
+    obj.active.push(fallingPlatform(175, 595,110,1));
+    obj.active.push(fallingPlatform(135, 645,110,1));
     
     //take me to level 2
     //obj.active.push(door(150, 400, 10, 100, 2, 770, 420));
@@ -125,8 +129,7 @@ function level1()
     levelBorders(obj);
     castleBackLight(obj,1650,429,7,2);
     castleBackHoles(obj,1650,173,2,4);
-    castleBackDark(obj,1670,536,14,8);
-    castleBackHoles(obj,1650,173,2,4);
+    castleBackDark(obj,1644,536,14,10);
 
     
     tree(obj,320,800);
@@ -151,6 +154,8 @@ function level1()
     platform(obj,-10,480,4,17);
     ground(obj,800,785,10);
     ground(obj,1318,735,10);
+    platform(obj,1000,405,5,17);
+    platform(obj,590,415,11,17);
     castle(obj,1637,735,12,9);
     castle(obj,1637,170,2,15);
     castle(obj,1637,505,12,1);
@@ -159,8 +164,9 @@ function level1()
     castle(obj,1637,44,2,2);
     castle(obj,1733,44,2,2);
     castle(obj,1829,44,2,2);
-    platform(obj,1000,405,5,17);
-    platform(obj,590,415,11,17);
+    castle(obj,1925,44,2,2);
+
+
 
 
     obj.static.push(returnTile(1050,405,28)); //vine
@@ -169,24 +175,24 @@ function level1()
     obj.static.push(returnTile(750,415,28)); //vine
     obj.static.push(returnTile(830,415,28)); //vine
     obj.static.push(returnTile(30,480,28)); //vine
-    obj.static.push(returnTile(1765,225,36)); //torch
-    obj.static.push(returnTile(1850,395,36)); //torch
-    obj.static.push(returnTile(1930,195,36)); //torch
+    obj.static.push(returnTile(1765,600,36)); //torch
+    obj.static.push(returnTile(1890,600,36)); //torch
 
 
     obj.active.push(movingPlatform(600,950,2,17,690,785));
     obj.active.push(movingPlatform(1468,700,2,17,1468,470));
     obj.active.push(movingPlatform(1701,330,3,30,1701,470));
-    obj.active.push(fallingPlatform(1150,775));
-    obj.active.push(fallingPlatform(1250,745));
-    obj.active.push(fallingPlatform(1400,475));
-    obj.active.push(fallingPlatform(1310,455));
-    obj.active.push(fallingPlatform(1220,435));
-    obj.active.push(fallingPlatform(180,465));
-    obj.active.push(fallingPlatform(270,455));
-    obj.active.push(fallingPlatform(360,445));
-    obj.active.push(fallingPlatform(450,435));
-    obj.active.push(fallingPlatform(540,425));
+
+    obj.active.push(fallingPlatform(1150,775,110,1));
+    obj.active.push(fallingPlatform(1250,745,110,1));
+    obj.active.push(fallingPlatform(1400,475,110,1));
+    obj.active.push(fallingPlatform(1310,455,110,1));
+    obj.active.push(fallingPlatform(1220,435,110,1));
+    obj.active.push(fallingPlatform(180,465,110,1));
+    obj.active.push(fallingPlatform(270,455,110,1));
+    obj.active.push(fallingPlatform(360,445,110,1));
+    obj.active.push(fallingPlatform(450,435,110,1));
+    obj.active.push(fallingPlatform(540,425,110,1));
 
     
     obj.static.push(returnTile(570,195,35)); //enemy blocker
@@ -202,14 +208,15 @@ function level1()
     if(!levelPreventSpawn[2])
         obj.active.push(breakable(70,862,2));
     if(!levelPreventSpawn[3])
-        obj.active.push(breakable(1607,640,3));
+        obj.active.push(breakable(1700,640,3));
 
     
     obj.active.push(door(0,750,10,100,0,770,805)); //door to level 0
     obj.active.push(door(0,875,10,100,0,770,915)); //door to level 0
     obj.active.push(door(0,380,10,100,0,770,430)); //door to level 0
-    obj.active.push(door(1990,600,10,130,2,0,600)); //door to level 2
-
+    obj.active.push(door(1990,630,10,100,2,15,689)); //door to level 2
+    obj.active.push(door(1990,405,10,100,2,15,458)); //door to level 2
+    obj.active.push(door(1990,230,10,100,2,15,282)); //door to level 2
     return obj;
 }
 
@@ -218,84 +225,67 @@ function level2()
     let obj = {};
     obj.static = [];
     obj.active = [];
-    obj.maxCamera = [2000, 1000];
+    obj.maxCamera = [1000, 1000];
 
     sky(obj);
     levelBorders(obj);
-    //castleBack(obj, 1639, 170, 10, 20);
+    castleBackLight(obj,0,429,17,2);
+    castleBackHoles(obj,0,173,4,4);
+    castleBackDark(obj,0,536,34,10);
+    
+    castle(obj,-10,735,5,9);
+    castle(obj,-10,505,27,1);
+    castle(obj,148,975,27,1);
+    castle(obj,-10,330,5,1);
+    castle(obj,300,537,1,8);
+    castle(obj,300,794,10,1);
+    castle(obj,786,700,1,10);
+    castle(obj,400,700,16,1);
+    castle(obj,978,330,1,18);
+    castle(obj,690,330,10,1);
+    castle(obj,-10,108,3,2);
+    castle(obj,85,140,8,1);
+
+    ladder(obj,148,778,3,1); //wood ladder
+    ladder(obj,910,361,18,2); //climable rope
+    ladder(obj,347,535,6,2); //climable rope
+    obj.static.push(returnTile(194,600,36)); //torch
+    obj.static.push(returnTile(80,600,36)); //torch
+    obj.static.push(returnTile(230,850,36)); //torch
+    obj.static.push(returnTile(350,850,36)); //torch
+    obj.static.push(returnTile(470,850,36)); //torch
+    obj.static.push(returnTile(745,750,36)); //torch
+    obj.static.push(returnTile(450,600,36)); //torch
+    obj.static.push(returnTile(590,600,36)); //torch
+    obj.static.push(returnTile(730,600,36)); //torch
+    obj.static.push(returnTile(850,850,36)); //torch
 
 
-    tree(obj, 320, 800);
-    tree(obj, 870, 620);
 
-    obj.static.push(returnTile(30, 825, 27)); //pink flower
-    obj.static.push(returnTile(70, 825, 27)); //pink flower
-    obj.static.push(returnTile(140, 825, 27)); //pink flower
-    obj.static.push(returnTile(120, 925, 26)); //blue flower
-    obj.static.push(returnTile(450, 925, 27)); //pink flower
-    obj.static.push(returnTile(460, 925, 26)); //blue flower
-    obj.static.push(returnTile(420, 925, 26)); //pink flower
-    obj.static.push(returnTile(1000, 753, 29)); //rock
-    obj.static.push(returnTile(1335, 703, 29)); //rock
+    obj.static.push(returnTile(130,950,35)); //enemy blocker
+    obj.static.push(returnTile(786,950,35)); // enemy blocker
+    obj.static.push(returnTile(312,768,35)); //enemy blocker
+    obj.static.push(returnTile(618,768,35)); // enemy blocker
 
+    obj.active.push(slime(160,943));
+    obj.active.push(slime(640,943));
+    obj.active.push(slime(400,763));
+    
+    obj.static.push(returnTile(840,350,35)); //enemy blocker
+    obj.static.push(returnTile(240,350,35)); // enemy blocker
 
+    obj.active.push(bird(600,338));
 
+    obj.active.push(movingPlatform(650,915,3,30,650,794));
 
-    ground(obj, 240, 885, 1);
-    platform(obj, -10, 850, 6, 17);
-    ground(obj, -10, 958, 18);
-    platform(obj, -10, 470, 4, 17);
-    ground(obj, 800, 785, 10);
-    ground(obj, 1318, 735, 10);
-    castle(obj, 1637, 735, 12, 9);
-    castle(obj, 1637, 170, 2, 15);
-    castle(obj, 1637, 505, 12, 1);
-    castle(obj, 1637, 473, 4, 1);
-    castle(obj, 1637, 332, 3, 1);
-    castle(obj, 1800, 300, 7, 1);
-    castle(obj, 1800, 300, 1, 4);
-    castle(obj, 1768, 396, 1, 1);
-    castle(obj, 1637, 108, 12, 2);
-    castle(obj, 1637, 44, 2, 2);
-    castle(obj, 1733, 44, 2, 2);
-    castle(obj, 1829, 44, 2, 2);
-    platform(obj, 1000, 405, 5, 17);
-    platform(obj, 590, 415, 11, 17);
+    for(let i = 0;i<14;i++)
+        obj.active.push(fallingPlatform(170+(i*32),330,30,2));
 
-    obj.static.push(returnTile(1050, 405, 28)); //vine
-    obj.static.push(returnTile(1130, 405, 28)); //vine
-    obj.static.push(returnTile(680, 415, 28)); //vine
-    obj.static.push(returnTile(750, 415, 28)); //vine
-    obj.static.push(returnTile(830, 415, 28)); //vine
-    obj.static.push(returnTile(30, 470, 28)); //vine
+    if(!levelPreventSpawn[4])
+        obj.active.push(breakable(973,880,4));
 
-    obj.active.push(fallingPlatform(1150, 775));
-    obj.active.push(fallingPlatform(1250, 745));
-    obj.active.push(movingPlatform(600, 950, 2, 17, 690, 785));
-    obj.active.push(movingPlatform(1468, 700, 2, 17, 1468, 470));
-    obj.active.push(fallingPlatform(1400, 475));
-    obj.active.push(fallingPlatform(1310, 455));
-    obj.active.push(fallingPlatform(1220, 435));
-    obj.active.push(fallingPlatform(180, 465));
-    obj.active.push(fallingPlatform(270, 455));
-    obj.active.push(fallingPlatform(360, 445));
-    obj.active.push(fallingPlatform(450, 435));
-    obj.active.push(fallingPlatform(540, 425));
-
-    obj.static.push(returnTile(570, 395, 35)); //enemy blocker
-    obj.static.push(returnTile(945, 395, 35)); // enemy blocker
-
-
-    obj.active.push(slime(600, 383));
-    if (!levelPreventSpawn[2])
-        obj.active.push(breakable(70, 862, 2));
-    if (!levelPreventSpawn[3])
-        obj.active.push(breakable(1607, 640, 3));
-
-
-    obj.active.push(door(0, 750, 10, 100, 0, 770, 805)); //door to level 0
-    obj.active.push(door(0, 875, 10, 100, 0, 770, 915)); //door to level 0
-    obj.active.push(door(0, 370, 10, 100, 0, 770, 420)); //door to level 0
-    obj.active.push(door(0, 900, 10, 900, 2, 90, 50)); //door to level 0
+    obj.active.push(door(0,630,10,100,1,1954,689)); //door to level 1
+    obj.active.push(door(0,405,10,100,1,1954,455)); //door to level 1
+    obj.active.push(door(0,230,10,100,1,1954,282)); //door to level 1
     return obj;
 }

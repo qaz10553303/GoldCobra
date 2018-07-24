@@ -83,7 +83,7 @@ function mainMenu() //main menu loop generates new character and map upon ending
         LevelTheme.play();	
         character = createCharacter();
 		//nextLevel(0,50,920);
-        nextLevel(1,1770,220);
+        nextLevel(1,1800,620);
         messageSystem(" Welcome to The Tutorial -------------------------  Move your character    left and right with the         arrow keys                                   Jump with the up arrow                          The character hp is shown    in the top left                                 collect floating icons  for powerups and health ------------------------- Press Enter to Continue");
 		currentAnimationFrame = window.requestAnimationFrame(gameLoop);
 	}
@@ -126,10 +126,11 @@ function generateBackground()// draws background layer should only be called dur
             tileList[currentRoom.static[i].tileNum].w,tileList[currentRoom.static[i].tileNum].h,
             currentRoom.static[i].x,currentRoom.static[i].y,
             tileList[currentRoom.static[i].tileNum].w*2,tileList[currentRoom.static[i].tileNum].h*2);
-        /*if(tileList[currentRoom.static[i].tileNum].passable == -1)
+        if(tileList[currentRoom.static[i].tileNum].passable == -1)
             {
                 offScreenSurface.fillStyle = 'green';
-                offScreenSurface.fillRect(currentRoom.static[i].x,currentRoom.static[i].y,20,20);
+                offScreenSurface.fillRect(currentRoom.static[i].x,currentRoom.static[i].y,
+                tileList[currentRoom.static[i].tileNum].w*2,tileList[currentRoom.static[i].tileNum].h*2);
             }//shows enemy blockers*/
 
     }
@@ -170,6 +171,11 @@ function userInputHandler() //accepts and applies player input
         character.jump();
     else
         character.jumpTap = true;
+    if(keysPressed.includes(40) && character.ladder)//down
+    {
+        character.moveVector[1] += 2;
+        character.ladderDir = 1;
+    }
     if(keysPressed.includes(16))//shift
         character.dash();
     else
@@ -223,13 +229,11 @@ function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to
 
     if (t_collision < b_collision && t_collision < l_collision && t_collision < r_collision && character.moveVector[1]>=0 )
     {
-        character.jump1 = true;
-        if(character.jumpPowerup)
-            character.jump2 = true;
-        if(character.dashCd < 0)
-            character.dashGround = true;
+        character.grounded();        
         character.moveVector[1]  = 0;
         character.coordinates[1]  -= t_collision;
+    if(Math.abs(t_collision) >16)
+        character.respawn();
     }
     else if (b_collision < t_collision && b_collision < l_collision && b_collision < r_collision && character.moveVector[1]<=0)
     {
@@ -244,7 +248,7 @@ function fineCollision(x1,y1,w1,h1,x2,y2,w2,h2)//will use penetration testing to
     {
         character.coordinates[0]  += r_collision;
     }
-
+    
 }
 
 function resetGame() //retuns to main menu
