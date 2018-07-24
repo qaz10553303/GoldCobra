@@ -548,7 +548,7 @@ function projectile(x,y,dir)
     {
         for (let i = 0; i<currentRoom.static.length; i++)
         {
-            if(tileList[currentRoom.static[i].tileNum].passable > 0)
+            if(tileList[currentRoom.static[i].tileNum].passable == 1)
             {
                 if(roughCollision(this.coordinates[0],this.coordinates[1],30,30,currentRoom.static[i].x, currentRoom.static[i].y,tileList[currentRoom.static[i].tileNum].w*2, tileList[currentRoom.static[i].tileNum].h*2))
                 {
