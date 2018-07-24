@@ -453,7 +453,7 @@ function bird(x,y)
                     this.visualState = true;
                 else
                     this.visualState = false;
-                if(Math.abs(this.coordinates[1] - this.returnCoordinates[1]) <=3 && || (Math.abs(this.coordinates[0]-this.targetCoordinates[0]) <=3)
+                if(Math.abs(this.coordinates[1] - this.returnCoordinates[1]) <=3 && (Math.abs(this.coordinates[0]-this.targetCoordinates[0]) <=3)
                 {
                     this.diveState = false;
                     this.characterDistance = Math.sqrt(Math.pow(((character.coordinates[0]+15)-(this.coordinates[0]+32)),2)
