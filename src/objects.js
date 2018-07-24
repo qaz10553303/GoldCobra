@@ -202,10 +202,10 @@ function createCharacter() //generates and contains game character
     };
     obj.draw = function()
     {
-        //onScreenSurface.fillStyle = 'white';
-        //onScreenSurface.font = "20px Courier New";
-        //onScreenSurface.fillText(this.coordinates[0].toString(), 70, 70);
-        //onScreenSurface.fillText(this.coordinates[1].toString(), 70, 100);
+        onScreenSurface.fillStyle = 'white';
+        onScreenSurface.font = "20px Courier New";
+        onScreenSurface.fillText(this.coordinates[0].toString(), 70, 70);
+        onScreenSurface.fillText(this.coordinates[1].toString(), 70, 100);
 
         if(this.iFrames%2 == 0) //strobes player for invincibility frames
         {
