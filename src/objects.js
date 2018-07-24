@@ -189,7 +189,7 @@ function createCharacter() //generates and contains game character
     
     obj.tick = function ()
     {
-        this.jump2 = true;
+        //this.jump2 = true;
         this.applyMovement(); //i am applying the movement vector in 2 half steps and checking collision after each to attemp to reduce tunneling
         this.applyCollision();
         userInputHandler();//user input 
@@ -453,7 +453,7 @@ function bird(x,y)
                     this.visualState = true;
                 else
                     this.visualState = false;
-                if(Math.abs(this.coordinates[1] - this.returnCoordinates[1]) <=3)
+                if(Math.abs(this.coordinates[1] - this.returnCoordinates[1]) <=3 && || (Math.abs(this.coordinates[0]-this.targetCoordinates[0]) <=3)
                 {
                     this.diveState = false;
                     this.characterDistance = Math.sqrt(Math.pow(((character.coordinates[0]+15)-(this.coordinates[0]+32)),2)
@@ -668,9 +668,9 @@ function fallingPlatform(x,y,time,type)
         else if (this.timer < 20+time)
         {
             if(Math.floor(this.timer/3)%2)
-                this.coordinates[1] +=1;
+                this.coordinates[0] +=1;
             else
-                this.coordinates[1] -=1;
+                this.coordinates[0] -=1;
         }
         else if(this.timer < time+190)
         {
