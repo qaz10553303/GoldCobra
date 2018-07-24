@@ -1,2 +1,0 @@
-# RoboGranny
-Action/Puzzle Platformer
