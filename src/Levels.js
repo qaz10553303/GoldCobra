@@ -242,9 +242,10 @@ function level2()
     castle(obj,786,700,1,10);
     castle(obj,400,700,16,1);
     castle(obj,978,330,1,18);
-    castle(obj,690,330,10,1);
+    castle(obj, 690, 330, 10, 1);
     castle(obj,-10,108,3,2);
-    castle(obj,85,140,8,1);
+    castle(obj, 85, 140, 8, 1);
+    castle(obj, 10, 173, 32, 1);
 
     ladder(obj,148,778,3,1); //wood ladder
     ladder(obj,910,361,18,2); //climable rope
@@ -286,6 +287,78 @@ function level2()
 
     obj.active.push(door(0,630,10,100,1,1954,689)); //door to level 1
     obj.active.push(door(0,405,10,100,1,1954,455)); //door to level 1
-    obj.active.push(door(0,230,10,100,1,1954,282)); //door to level 1
+    obj.active.push(door(0, 230, 10, 100, 1, 1954, 282)); //door to level 1
+    obj.active.push(door(990, 230, 10, 100, 3, 15, 282)); //door to level 2//next level door
+    return obj;
+}
+
+function level3() {
+    let obj = {};
+    obj.static = [];
+    obj.active = [];
+    obj.maxCamera = [1000, 1000];
+
+    sky(obj);
+    levelBorders(obj);
+    castleBackLight(obj, 0, 429, 17, 2);
+    castleBackHoles(obj, 0, 173, 4, 4);
+    castleBackDark(obj, 0, 536, 34, 10);
+
+    castle(obj, -10, 735, 5, 9);
+    castle(obj, -10, 505, 27, 1);
+    castle(obj, 148, 975, 27, 1);
+    castle(obj, -10, 330, 5, 1);
+    castle(obj, 300, 537, 1, 8);
+    castle(obj, 300, 794, 10, 1);
+    castle(obj, 786, 700, 1, 10);
+    castle(obj, 400, 700, 16, 1);
+    castle(obj, 978, 330, 1, 18);
+    castle(obj, 690, 330, 10, 1);
+    castle(obj, -10, 108, 3, 2);
+    castle(obj, 85, 140, 8, 1);
+    castle(obj, 10, 173, 32, 1);
+
+    ladder(obj, 148, 778, 3, 1); //wood ladder
+    ladder(obj, 910, 361, 18, 2); //climable rope
+    ladder(obj, 347, 535, 6, 2); //climable rope
+    obj.static.push(returnTile(194, 600, 36)); //torch
+    obj.static.push(returnTile(80, 600, 36)); //torch
+    obj.static.push(returnTile(230, 850, 36)); //torch
+    obj.static.push(returnTile(350, 850, 36)); //torch
+    obj.static.push(returnTile(470, 850, 36)); //torch
+    obj.static.push(returnTile(745, 750, 36)); //torch
+    obj.static.push(returnTile(450, 600, 36)); //torch
+    obj.static.push(returnTile(590, 600, 36)); //torch
+    obj.static.push(returnTile(730, 600, 36)); //torch
+    obj.static.push(returnTile(850, 850, 36)); //torch
+
+
+
+    obj.static.push(returnTile(130, 950, 35)); //enemy blocker
+    obj.static.push(returnTile(786, 950, 35)); // enemy blocker
+    obj.static.push(returnTile(312, 768, 35)); //enemy blocker
+    obj.static.push(returnTile(618, 768, 35)); // enemy blocker
+
+    obj.active.push(slime(160, 943));
+    obj.active.push(slime(640, 943));
+    obj.active.push(slime(400, 763));
+
+    obj.static.push(returnTile(840, 350, 35)); //enemy blocker
+    obj.static.push(returnTile(240, 350, 35)); // enemy blocker
+
+    obj.active.push(bird(600, 338));
+
+    obj.active.push(movingPlatform(650, 915, 3, 30, 650, 794));
+
+    for (let i = 0; i < 14; i++)
+        obj.active.push(fallingPlatform(170 + (i * 32), 330, 30, 2));
+
+    if (!levelPreventSpawn[4])
+        obj.active.push(breakable(973, 880, 4));
+
+    obj.active.push(door(0, 630, 10, 100, 2, 1954, 689)); //door to level 1
+    //obj.active.push(door(0, 405, 10, 100, 2, 1954, 455)); //door to level 1
+    obj.active.push(door(0, 230, 10, 100, 2, 1954, 282)); //door to level 1
+    obj.active.push(door(990, 230, 10, 100, 2, 15, 282)); //door to level 2//next level door
     return obj;
 }
