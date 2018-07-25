@@ -413,7 +413,7 @@ function bird(x,y)
                 this.diveState = true;
                 this.targetCoordinates = [character.coordinates[0]+15,character.coordinates[1]+23]
                 this.diveTimer = 0;
-                this.diveAngle = Math.atan2(this.targetCoordinates[0]-(this.coordinates[0]+32),(this.targetCoordinates[1]-this.coordinates[1]+32));
+                this.diveAngle = Math.atan2(this.targetCoordinates[0]-(this.coordinates[0]+32),(this.targetCoordinates[1]+25-this.coordinates[1]+32));
                 if(this.diveAngle > 0)
                     this.visualState = true;
                 else
@@ -670,18 +670,21 @@ function fallingPlatform(x,y,time,type)
         
         if(this.timer < 20)
             {}
-        else if (this.timer < 20+time)
+        else if (this.timer < 20+this.time)
         {
             if(Math.floor(this.timer/3)%2)
                 this.coordinates[0] +=1;
             else
                 this.coordinates[0] -=1;
         }
-        else if(this.timer < time+190)
+        else if(this.timer < this.time+190)
         {
             this.coordinates[1] +=5;
-            if(this.timer == 130)
+            if(this.timer == this.time+20)
+            {
+                FallSFX.currentTime = 0;						
                 FallSFX.play();
+            }
         }
         else
         {
