@@ -745,7 +745,7 @@ function doubleJumpPowerUp(x,y,num)
 
     obj.draw = function()
     {
-        onScreenSurface.drawImage(PowerUpImage,0,0,34,34,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),34,34);
+        onScreenSurface.drawImage(powerUpImage,0,0,34,34,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),34,34);
     };
 
     return obj;
@@ -783,7 +783,7 @@ function dashPowerUp(x,y,num)
 
     obj.draw = function()
     {
-        onScreenSurface.drawImage(PowerUpImage,34,0,34,34,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),34,34);
+        onScreenSurface.drawImage(powerUpImage,34,0,34,34,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),34,34);
     };
 
     return obj;
@@ -823,7 +823,7 @@ function shootPowerUp(x,y,num)
 
     obj.draw = function()
     {
-        onScreenSurface.drawImage(PowerUpImage,68,0,34,34,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),34,34);
+        onScreenSurface.drawImage(powerUpImage,68,0,34,34,Math.floor(this.coordinates[0]-camera.coordinates[0]), Math.floor(this.coordinates[1]-camera.coordinates[1]),34,34);
     };
 
     return obj;
