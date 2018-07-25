@@ -15,23 +15,6 @@ let onScreenCanvas = document.getElementById("bg");//getting canvas
 let onScreenSurface = onScreenCanvas.getContext("2d");//setting canvas for drawing
 onScreenSurface.imageSmoothingEnabled = false;
 
-let PowerUpImage = new Image();//PowerUp graphics 
-PowerUpImage.src = "data/spriteSheet.png";
-
-let tilesImage = new Image();//background and enemy elements
-tilesImage.src = "data/MainSpriteSheet.png";
-
-let characterImage = new Image();//character sprites
-characterImage.src = "data/characters.png";
-
-let heartImage = new Image();//used for health meter and health pickup
-heartImage.src = "data/hearts.png";
-
-let explosionImage = new Image();//used for explosions when character projectiles die
-explosionImage.src = "data/explosion.png";
-
-let currentAnimationFrame; // not used at the moment but can be used to stop animation
-
 let keysPressed = [];//an array that holds the keys currently down
 
 document.addEventListener("keydown",keyDownHandler,false);
