@@ -74,7 +74,7 @@ function level0()
 
 
     ground(obj,-10,958,11);
-    platform(obj,0,700,4,17);
+    platform(obj,0,690,4,17);
     ground(obj,525,894,2);
     platform(obj,630,850,6,17);
     ground(obj,730,958,4);
@@ -97,16 +97,13 @@ function level0()
 
 
     if(!levelPreventSpawn[0])
-        obj.active.push(shootPowerUp(45,670,0));
+        obj.active.push(shootPowerUp(45,660,0));
 
     obj.active.push(movingPlatform(380,800,2,17,380,950));
     obj.active.push(slime(380, 518));
 
-    obj.active.push(fallingPlatform(175, 595,110,1));
-    obj.active.push(fallingPlatform(135, 645,110,1));
-    
-    //take me to level 2
-    //obj.active.push(door(150, 400, 10, 100, 2, 770, 420));
+    obj.active.push(fallingPlatform(155, 615,110,1));
+    //obj.active.push(fallingPlatform(135, 645,110,1));
 
     if(!levelPreventSpawn[1])
         obj.active.push(healthPickup(710,920,1));
@@ -288,7 +285,7 @@ function level2()
     obj.active.push(door(0,630,10,100,1,1954,689)); //door to level 1
     obj.active.push(door(0,405,10,100,1,1954,455)); //door to level 1
     obj.active.push(door(0, 230, 10, 100, 1, 1954, 282)); //door to level 1
-    obj.active.push(door(990, 230, 10, 100, 3, 15, 282)); //door to level 2//next level door
+    obj.active.push(door(990, 230, 10, 100, 3, 15, 282)); //door to level 3
     return obj;
 }
 
@@ -356,9 +353,9 @@ function level3() {
     if (!levelPreventSpawn[4])
         obj.active.push(breakable(973, 880, 4));
 
-    obj.active.push(door(0, 630, 10, 100, 2, 1954, 689)); //door to level 1
+    //obj.active.push(door(0, 630, 10, 100, 2, 1954, 689)); //door to level 1
     //obj.active.push(door(0, 405, 10, 100, 2, 1954, 455)); //door to level 1
-    obj.active.push(door(0, 230, 10, 100, 2, 1954, 282)); //door to level 1
-    obj.active.push(door(990, 230, 10, 100, 2, 15, 282)); //door to level 2//next level door
+    obj.active.push(door(0, 230, 10, 100, 2, 1954, 282)); //door to level 2
+    //obj.active.push(door(990, 230, 10, 100, 2, 15, 282)); //door to level 2//next level door
     return obj;
 }

@@ -4,6 +4,13 @@ offScreenCanvas.height = '5000';
 var offScreenSurface = offScreenCanvas.getContext("2d");
 offScreenSurface.imageSmoothingEnabled = false;
 
+var skyCanvas = document.createElement('canvas');
+skyCanvas.width = '2500';
+skyCanvas.height = '2500';
+var skySurface = skyCanvas.getContext("2d");
+skySurface.imageSmoothingEnabled = false;
+
+
 let onScreenCanvas = document.getElementById("bg");//getting canvas
 let onScreenSurface = onScreenCanvas.getContext("2d");//setting canvas for drawing
 onScreenSurface.imageSmoothingEnabled = false;
@@ -82,8 +89,8 @@ function mainMenu() //main menu loop generates new character and map upon ending
     {
         LevelTheme.play();	
         character = createCharacter();
-		//nextLevel(0,50,920);
-        nextLevel(1,1800,620);
+		nextLevel(0,50,920);
+        //nextLevel(1,1800,620);
         messageSystem(" Welcome to The Tutorial -------------------------  Move your character    left and right with the         arrow keys                                   Jump with the up arrow                          The character hp is shown    in the top left                                 collect floating icons  for powerups and health ------------------------- Press Enter to Continue");
 		currentAnimationFrame = window.requestAnimationFrame(gameLoop);
 	}
@@ -158,7 +165,8 @@ function drawUi() //draws hearts
 function drawBackground() // draws UI ontop of everything else currently showing debug info
 {
 	onScreenSurface.clearRect(0,0,600,600);
-	onScreenSurface.drawImage(offScreenCanvas,camera.coordinates[0],camera.coordinates[1],600,600,0,0,600,600);
+    onScreenSurface.drawImage(skyCanvas,Math.floor(camera.coordinates[0]/1.5),Math.floor(camera.coordinates[1]/1.5),600,600,0,0,600,600);
+	onScreenSurface.drawImage(offScreenCanvas,Math.floor(camera.coordinates[0]),Math.floor(camera.coordinates[1]),600,600,0,0,600,600);
 }
 
 function userInputHandler() //accepts and applies player input

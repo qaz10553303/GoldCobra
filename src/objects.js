@@ -5,6 +5,7 @@ function createCharacter() //generates and contains game character
     obj.coordinates = [0,0]; //player characters coordinates stored as x,y pair and player movement vector
     obj.moveVector = [0,0]; // character movement vector
     obj.sprite = [0,0,30,46];
+    obj.directionFacing = 1;
     
     obj.jump1 = false;
     obj.jump2 = false;
@@ -72,7 +73,7 @@ function createCharacter() //generates and contains game character
             DashSFX.play();
             this.dashTap = false;
             this.dashGround = false;
-            this.moveVector[0] += 40*Math.sign(this.state);
+            this.moveVector[0] += 40*Math.sign(this.directionFacing);
 
         }
                          
@@ -109,6 +110,10 @@ function createCharacter() //generates and contains game character
         this.ladder = false;
         this.ladderDir = 0;
         this.ladderTop = false;
+        if(this.moveVector[0] < 0)
+            this.directionFacing = -1;
+        else if (this.moveVector[0] > 0)
+            this.directionFacing = 1;
     };
 
     obj.applyCollision = function()
@@ -165,7 +170,7 @@ function createCharacter() //generates and contains game character
     {
         if(this.projectileTap && this.projectilePowerup)
         {
-            this.projectiles.push(projectile(this.coordinates[0],this.coordinates[1],this.state));
+            this.projectiles.push(projectile(this.coordinates[0],this.coordinates[1],this.directionFacing));
             this.projectileTap = false;
         }
     };
@@ -189,7 +194,7 @@ function createCharacter() //generates and contains game character
     
     obj.tick = function ()
     {
-        //this.jump2 = true;
+        this.jump2 = true;
         this.applyMovement(); //i am applying the movement vector in 2 half steps and checking collision after each to attemp to reduce tunneling
         this.applyCollision();
         userInputHandler();//user input 
@@ -899,23 +904,28 @@ function castle(obj,x,y,length,height) //object reference , x,ytop left corner, 
 
 function sky(obj)
 {
-    let num = Math.ceil(obj.maxCamera[0]/512);
+    let num = Math.ceil(obj.maxCamera[0]/512/1.5);
     let num2 = Math.ceil(obj.maxCamera[1]/64);
 
     for(let i = 0;i<num;i++)
-        obj.static.push(returnTile(512*i,0,0));
-    for(let i = 0;i<Math.ceil(((num2-3)*num)/2);i++)
-        obj.static.push(returnTile((i%num)*512,64+(Math.floor(i/num)*64),1));
+        skySurface.drawImage(tilesImage,tileList[0].x,tileList[0].y,tileList[0].w,tileList[0].h,512*i,0,tileList[0].w*2,tileList[0].h*2);
+    for(let i = 0;i<Math.ceil(((num2-3)*num)/3);i++)
+        skySurface.drawImage(tilesImage,tileList[1].x,tileList[1].y,tileList[1].w,tileList[1].h,(i%num)*512,64+(Math.floor(i/num)*64),tileList[1].w*2,tileList[1].h*2);
     for(let i = 0;i<num;i++)
-        obj.static.push(returnTile(512*i,64+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64),2));
+        skySurface.drawImage(tilesImage,tileList[2].x,tileList[2].y,tileList[2].w,tileList[2].h,
+            512*i,64+(Math.floor(Math.ceil(((num2-3)*num)/3)/num)*64),tileList[2].w*2,tileList[2].h*2);
     for(let i = 0;i<num;i++)
-        obj.static.push(returnTile(512*i,128+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64),3));
+        skySurface.drawImage(tilesImage,tileList[3].x,tileList[3].y,tileList[3].w,tileList[3].h,
+            512*i,128+(Math.floor(Math.ceil(((num2-3)*num)/3)/num)*64),tileList[3].w*2,tileList[3].h*2);
     for(let i = 0;i<num;i++)
-        obj.static.push(returnTile(512*i,192+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64),4));
+        skySurface.drawImage(tilesImage,tileList[4].x,tileList[4].y,tileList[4].w,tileList[4].h,
+            512*i,192+(Math.floor(Math.ceil(((num2-3)*num)/3)/num)*64),tileList[4].w*2,tileList[4].h*2);
     for(let i = 0;i<num;i++)
-        obj.static.push(returnTile(512*i,256+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64),5));
-    for(let i = 0;i<Math.ceil(((num2-3)*num)/2);i++)
-        obj.static.push(returnTile((i%num)*512,320+(Math.floor(Math.ceil(((num2-3)*num)/2)/num)*64)+(Math.floor(i/num)*52),6));
+        skySurface.drawImage(tilesImage,tileList[5].x,tileList[5].y,tileList[5].w,tileList[5].h,
+            512*i,256+(Math.floor(Math.ceil(((num2-3)*num)/3)/num)*64),tileList[5].w*2,tileList[5].h*2);
+    for(let i = 0;i<Math.ceil(((num2-3)*num)/(3/2));i++)
+        skySurface.drawImage(tilesImage,tileList[6].x,tileList[6].y,tileList[6].w,tileList[6].h,
+            (i%num)*512,320+(Math.floor(Math.ceil(((num2-3)*num)/3)/num)*64)+(Math.floor(i/num)*52),tileList[6].w*2,tileList[6].h*2);
 }
 
 function castleBackLight(obj,x,y,w,h) //object reference , x,ytop left corner,  length castle background ,height of castle background
