@@ -200,7 +200,7 @@ function level1()
     
     obj.active.push(bird(600,183));
     obj.active.push(slime(900,753));
-    obj.active.push(rotatingFire(1860,330,8));
+    obj.active.push(rotatingFire(1828,330,8));
 
     if(!levelPreventSpawn[2])
         obj.active.push(breakable(70,862,2));
