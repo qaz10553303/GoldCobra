@@ -654,6 +654,69 @@ function movingPlatform(x,y,length,type,x2,y2)// x,y start coordinates ,     len
    
 }
 
+function rotatingFire(x,y,length)// x,y, length of fire stick
+{
+    let obj = {};
+    obj.coordinates = [x,y];
+    obj.rotationAngle = Math.random()*Math.PI*2;
+    obj.fireBalls = [];
+    for(let i = 0;i<length;i++)
+        obj.fireBalls.push(fireBall(x,y));
+    
+    obj.tick = function()
+    {
+        this.rotationAngle += (3/180);
+        if(this.rotationAngle> Math.PI*2);
+            this.rotationAngle - Math.PI*2;
+        for(let i =0;i<this.fireBalls.length;i++)
+        {
+            this.fireBalls[i].coordinates[0] = this.coordinates[0]+10+(i*16)*Math.cos(this.rotationAngle);
+            this.fireBalls[i].coordinates[1] = this.coordinates[1]+12+(i*16)*Math.sin(this.rotationAngle);
+            this.fireBalls[i].tick();
+        }
+        if (roughCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],
+                           this.coordinates[0],this.coordinates[1],32,32))
+            fineCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],
+                this.coordinates[0],this.coordinates[1],32,32);
+
+    };
+    obj.draw = function()
+    {
+        onScreenSurface.drawImage(tilesImage,80,1056,16,16,Math.floor(this.coordinates[0]-camera.coordinates[0]),
+            Math.floor(this.coordinates[1]-camera.coordinates[1]),32,32);
+        for(let i =0;i<this.fireBalls.length;i++)
+            this.fireBalls[i].draw();
+    };
+    return obj;
+}
+
+function fireBall(x,y)// x,y
+{
+    let obj = {};
+    obj.coordinates = [x,y];
+    obj.bounceAngle = 0;
+          
+    obj.tick = function()
+    {
+        if (roughCollision(character.coordinates[0],character.coordinates[1],character.sprite[2],character.sprite[3],this.coordinates[0],this.coordinates[1],12,8))
+        {
+            FallSFX.play();						
+            this.bounceAngle = Math.atan2((this.coordinates[0]+6)-(character.coordinates[0]+15),(this.coordinates[1]+4)-(character.coordinates[1]+23));
+            character.hurt();
+            character.moveVector[0] -= 20*Math.sin(this.bounceAngle);
+            character.moveVector[1] = -5*Math.cos(this.bounceAngle);
+        }
+    };
+    obj.draw = function()
+    {
+        onScreenSurface.drawImage(tilesImage,101,1004,12,8,Math.floor(this.coordinates[0]-camera.coordinates[0]),
+        Math.floor(this.coordinates[1]-camera.coordinates[1]),24,16);
+    };
+
+    return obj;
+   
+}
+
 function fallingPlatform(x,y,time,type)
 {
     let obj = {};

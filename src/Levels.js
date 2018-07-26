@@ -46,7 +46,7 @@ function setTileList() //really belongs in objects file but is here for refernec
 
 }
 
-levelPreventSpawn=[false,false,false,false,false]
+levelPreventSpawn=[false,false,false,false,false,false]
 
 function level0()
 {
@@ -98,12 +98,11 @@ function level0()
 
     if(!levelPreventSpawn[0])
         obj.active.push(shootPowerUp(45,660,0));
-
+    
     obj.active.push(movingPlatform(380,800,2,17,380,950));
     obj.active.push(slime(380, 518));
 
     obj.active.push(fallingPlatform(155, 615,110,1));
-    //obj.active.push(fallingPlatform(135, 645,110,1));
 
     if(!levelPreventSpawn[1])
         obj.active.push(healthPickup(710,920,1));
@@ -201,6 +200,7 @@ function level1()
     
     obj.active.push(bird(600,183));
     obj.active.push(slime(900,753));
+    obj.active.push(rotatingFire(1860,330,8));
 
     if(!levelPreventSpawn[2])
         obj.active.push(breakable(70,862,2));
@@ -275,12 +275,24 @@ function level2()
     obj.active.push(bird(600,338));
 
     obj.active.push(movingPlatform(650,915,3,30,650,794));
+    obj.active.push(rotatingFire(300,604,10));
+    obj.active.push(rotatingFire(786-256,508,6));
+    obj.active.push(rotatingFire(418,173,8));
+    obj.active.push(rotatingFire(786,754,8));
+
+
+
+
+
 
     for(let i = 0;i<14;i++)
         obj.active.push(fallingPlatform(170+(i*32),330,30,2));
 
     if(!levelPreventSpawn[4])
         obj.active.push(breakable(973,880,4));
+    if(!levelPreventSpawn[5])
+        obj.active.push(healthPickup(120,300,5));
+
 
     obj.active.push(door(0,630,10,100,1,1954,689)); //door to level 1
     obj.active.push(door(0,405,10,100,1,1954,455)); //door to level 1
