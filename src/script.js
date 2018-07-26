@@ -27,6 +27,7 @@ let tileList = [];//list of tiles and their locations on the sprite sheet and at
 setTileList();//populates the list with hardcoded tile information
 
 let waitTimer = 60; // prevents main menu from being skipped instantly by holding enter forces 1 second delay
+let menuCursor = 0;
 let messageState = false; // prevents game from updating while messages are displaying on screen 
 
 function keyDownHandler(e) //appends key to array if it is not already present
@@ -53,32 +54,63 @@ function mainMenuBackground() // generates main menu background
     generateRoomMap(0);
     generateBackground()
     waitTimer = 60;
+    menuCursor = 0;
     mainMenu();   
 }
 
 function mainMenu() //main menu loop generates new character and map upon ending
 {
-    drawBackground();
-	onScreenSurface.fillStyle = 'white';
-	onScreenSurface.font = "bold 30px Courier New";
-	onScreenSurface.fillText("Adventure Quest", 150, 260);
-    onScreenSurface.font = "italic 15px Courier New";
-    if(Math.floor(waitTimer/30)%2)
-        onScreenSurface.fillText("Press enter to play", 210, 360);
-    waitTimer--;
-    if(waitTimer<-950)
-        waitTimer = 0;
-	if(keysPressed.includes(13) && waitTimer< 5)
+    if(!messageState)
     {
-        LevelTheme.play();	
-        character = createCharacter();
-		//nextLevel(0,50,920);
-        nextLevel(2,20,620);
-        messageSystem(" Welcome to The Tutorial -------------------------  Move your character    left and right with the         arrow keys                                   Jump with the up arrow                          The character hp is shown    in the top left                                 collect floating icons  for powerups and health ------------------------- Press Enter to Continue");
-		currentAnimationFrame = window.requestAnimationFrame(gameLoop);
-	}
-	else
-		currentAnimationFrame = window.requestAnimationFrame(mainMenu);
+        if(waitTimer<-950)
+            waitTimer = 0;
+        waitTimer--;
+        if(keysPressed.includes(13) && waitTimer< 5 && menuCursor == 0)
+        {
+            StartSFX.play();	
+            setTimeout(function(){LevelTheme.play();},2200);	
+            character = createCharacter();
+            nextLevel(0,50,920);
+            //nextLevel(2,20,620);
+            window.requestAnimationFrame(gameLoop);
+        }
+        else if(keysPressed.includes(13) && waitTimer< 5 && menuCursor == 1)
+        {
+            messageSystem(" Welcome to The Tutorial -------------------------  Move your character    left and right with the         arrow keys                                   Jump with the up arrow                          The character hp is shown    in the top left                                 collect floating icons  for powerups and health ------------------------- Press Enter to Continue");
+            window.requestAnimationFrame(mainMenu);
+
+        }
+        else
+        {
+            drawBackground();
+            onScreenSurface.fillStyle = 'white';
+            onScreenSurface.font = "bold 30px Courier New";
+            onScreenSurface.fillText("Adventure Quest", 150, 260);
+            onScreenSurface.font = "italic 15px Courier New";
+            onScreenSurface.fillText("Start", 250, 360);
+            onScreenSurface.fillText("Instructions", 250, 390);
+            if(Math.floor(waitTimer/30)%2)
+            {
+                onScreenSurface.beginPath();
+                onScreenSurface.arc(240, 355+(menuCursor*30), 3, 0, 2 * Math.PI, false);
+                onScreenSurface.fill();
+            }
+            if(keysPressed.includes(38))//up
+                menuCursor--;
+            else if (keysPressed.includes(40))
+                menuCursor++;
+            if(menuCursor<0)
+                menuCursor =0;
+            if(menuCursor>1)
+                menuCursor =1;
+            window.requestAnimationFrame(mainMenu);
+            }
+    }
+    else
+    {
+        waitMessage();
+        window.requestAnimationFrame(mainMenu);
+    }
 }
 
 function gameLoop() //main control loop
@@ -93,7 +125,7 @@ function gameLoop() //main control loop
        waitMessage();
     
     if(!character.dead || messageState)
-        currentAnimationFrame = window.requestAnimationFrame(gameLoop);
+        window.requestAnimationFrame(gameLoop);
     else            
         resetGame();
 
@@ -202,6 +234,15 @@ function generateRoomMap (goto) //called by floor map generator to generate each
             break;
         case 3:
             return level3();
+            break;
+        case 4:
+            return level4();
+            break; 
+        case 5:
+            return level5();
+            break; 
+        case 6:
+            return level6();
             break;
     }
 }
@@ -312,5 +353,8 @@ function waitMessage() //pauses game till message is recived
     if(waitTimer<-950)
         waitTimer = 0;
     if(keysPressed.includes(13) && waitTimer < 5)
+    {
         messageState = false;
+        waitTimer = 30;
+    }
 }

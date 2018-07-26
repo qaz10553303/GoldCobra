@@ -50,7 +50,7 @@ function createCharacter() //generates and contains game character
                 else
                     this.jump2 =false;
                 if(!this.ladder)
-                JumpSFX.play();
+                    JumpSFX.play();
                 this.jumpTap = false;
             }
         }
@@ -437,9 +437,7 @@ function bird(x,y)
                 this.coordinates[0] += 3*Math.sin(this.diveAngle);
                 this.coordinates[1] += 3*Math.cos(this.diveAngle);
                 if((Math.abs(this.coordinates[1]-this.targetCoordinates[1]) <=3) || (Math.abs(this.coordinates[0]-this.targetCoordinates[0]) <=3))
-                {
                     this.diveTimer++;
-                }
             }
             else if (this.diveTimer <= 50) //move after dive
             {
@@ -458,7 +456,7 @@ function bird(x,y)
                     this.visualState = true;
                 else
                     this.visualState = false;
-                if(Math.abs(this.coordinates[1] - this.returnCoordinates[1]) <=3 && (Math.abs(this.coordinates[0]-this.targetCoordinates[0]) <=3))
+                if(Math.abs(this.coordinates[1] - this.returnCoordinates[1]) <=3 || (Math.abs(this.coordinates[0]-this.targetCoordinates[0]) <=3))
                 {
                     this.diveState = false;
                     this.characterDistance = Math.sqrt(Math.pow(((character.coordinates[0]+15)-(this.coordinates[0]+32)),2)
